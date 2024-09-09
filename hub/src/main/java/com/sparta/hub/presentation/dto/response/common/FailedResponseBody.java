@@ -1,4 +1,4 @@
-package com.sparta.hub.application.common.response;
+package com.sparta.hub.presentation.dto.response.common;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import lombok.Getter;

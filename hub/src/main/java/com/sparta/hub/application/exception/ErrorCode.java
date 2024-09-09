@@ -1,4 +1,4 @@
-package com.sparta.hub.exception;
+package com.sparta.hub.application.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

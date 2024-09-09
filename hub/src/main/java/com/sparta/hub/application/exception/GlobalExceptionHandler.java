@@ -1,7 +1,7 @@
-package com.sparta.hub.exception;
+package com.sparta.hub.application.exception;
 
-import com.sparta.hub.application.common.response.ResponseBody;
-import com.sparta.hub.application.common.response.ResponseUtil;
+import com.sparta.hub.presentation.dto.response.common.ResponseBody;
+import com.sparta.hub.presentation.dto.response.common.ResponseUtil;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

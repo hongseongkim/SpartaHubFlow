@@ -1,9 +1,10 @@
-package com.sparta.hub.domain.repository;
+package com.sparta.hub.infrastructure.repository;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.hub.domain.model.Hub;
 import com.sparta.hub.domain.model.QHub;
 
+import com.sparta.hub.domain.repository.HubCustomRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

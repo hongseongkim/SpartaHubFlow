@@ -1,7 +1,7 @@
 package com.sparta.hub.infrastructure.initializer;
 
 import com.sparta.hub.domain.model.Hub;
-import com.sparta.hub.domain.repository.HubRepository;
+import com.sparta.hub.infrastructure.repository.HubRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;

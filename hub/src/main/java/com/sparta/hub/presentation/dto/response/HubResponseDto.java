@@ -1,4 +1,4 @@
-package com.sparta.hub.application.dto;
+package com.sparta.hub.presentation.dto.response;
 
 import com.sparta.hub.domain.model.Hub;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import lombok.Getter;
 
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
-public class HubResponseDTO {
+public class HubResponseDto {
 
     private UUID id;
     private String name;
@@ -19,8 +19,8 @@ public class HubResponseDTO {
     private String createdBy;
     private String updatedBy;
 
-    public static HubResponseDTO fromEntity(Hub hub) {
-        return HubResponseDTO.builder()
+    public static HubResponseDto fromEntity(Hub hub) {
+        return HubResponseDto.builder()
                 .id(hub.getHubId())
                 .name(hub.getName())
                 .address(hub.getAddress())

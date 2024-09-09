@@ -1,9 +1,10 @@
 package com.sparta.hub.application.service;
 
+import com.sparta.hub.application.dto.HubDto;
 import com.sparta.hub.domain.model.Hub;
-import com.sparta.hub.exception.ErrorCode;
-import com.sparta.hub.exception.ServiceException;
-import com.sparta.hub.domain.repository.HubRepository;
+import com.sparta.hub.application.exception.ErrorCode;
+import com.sparta.hub.application.exception.ServiceException;
+import com.sparta.hub.infrastructure.repository.HubRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,8 +19,8 @@ public class HubService {
     private final HubRepository hubRepository;
 
     @Transactional
-    public Hub createHub(String name, String address) {
-        Hub hub = Hub.create(name, address);
+    public Hub createHub(HubDto hubDto) {
+        Hub hub = Hub.create(hubDto.getName(), hubDto.getAddress());
         return hubRepository.save(hub);
     }
 
@@ -35,10 +36,10 @@ public class HubService {
     }
 
     @Transactional
-    public Hub updateHub(UUID hubId, String name, String address) {
+    public Hub updateHub(UUID hubId, HubDto hubDto) {
         Hub hub = getHubById(hubId);
-        hub.updateName(name);
-        hub.updateAddress(address);
+        hub.updateName(hub.getName());
+        hub.updateAddress(hubDto.getAddress());
         return hubRepository.save(hub);
     }
 

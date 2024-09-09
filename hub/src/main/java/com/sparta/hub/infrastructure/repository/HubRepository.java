@@ -1,6 +1,7 @@
-package com.sparta.hub.domain.repository;
+package com.sparta.hub.infrastructure.repository;
 
 import com.sparta.hub.domain.model.Hub;
+import com.sparta.hub.domain.repository.HubCustomRepository;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

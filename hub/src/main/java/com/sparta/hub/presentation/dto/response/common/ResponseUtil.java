@@ -1,6 +1,6 @@
-package com.sparta.hub.application.common.response;
+package com.sparta.hub.presentation.dto.response.common;
 
-import com.sparta.hub.exception.ErrorCode;
+import com.sparta.hub.application.exception.ErrorCode;
 
 public class ResponseUtil {
 
