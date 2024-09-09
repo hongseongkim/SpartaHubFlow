@@ -38,6 +38,7 @@ public class ProductService {
         return ProductDto.Response.of(productRepository.save(new Product(
                 productDto.getProductName(),
                 productDto.getDescription(),
+                productDto.getStock(),
                 productDto.getHubId(),
                 productDto.getCompanyId()
         )));
@@ -90,6 +91,7 @@ public class ProductService {
         product.modify(
                 productDto.getProductName(),
                 productDto.getDescription(),
+                productDto.getStock(),
                 productDto.getHubId(),
                 productDto.getCompanyId());
 

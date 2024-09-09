@@ -28,22 +28,27 @@ public class Product extends Timestamped{
     @Column(name = "description", nullable = false)
     private String description;
 
+    @Column(name = "stock")
+    private Integer stock;
+
     @Column(name = "hub_id")
     private UUID hubId;
 
     @Column(name = "company_id")
     private UUID companyId;
 
-    public Product(String ProductName, String description, UUID hubId, UUID companyId) {
+    public Product(String ProductName, String description, Integer stock, UUID hubId, UUID companyId) {
         this.productName = ProductName;
         this.description = description;
+        this.stock = stock;
         this.hubId = hubId;
         this.companyId = companyId;
     }
 
-    public void modify(String ProductName, String description, UUID hubId, UUID companyId) {
+    public void modify(String ProductName, String description, Integer stock,UUID hubId, UUID companyId) {
         this.productName = ProductName;
         this.description = description;
+        this.stock = stock;
         this.hubId = hubId;
         this.companyId = companyId;
     }
