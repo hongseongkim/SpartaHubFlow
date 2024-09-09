@@ -14,6 +14,7 @@ public interface ProductDto {
     class Create {
         private final String productName;
         private final String description;
+        private final Integer stock;
         private final UUID hubId;
         private final UUID companyId;
     }
@@ -23,6 +24,7 @@ public interface ProductDto {
     class Modify {
         private final String productName;
         private final String description;
+        private final Integer stock;
         private final UUID hubId;
         private final UUID companyId;
     }
@@ -39,6 +41,7 @@ public interface ProductDto {
         private final UUID productId;
         private final String productName;
         private final String description;
+        private final Integer stock;
         private final UUID hubId;
         private final UUID companyId;
 
@@ -47,6 +50,7 @@ public interface ProductDto {
                     .productId(product.getProductId())
                     .productName(product.getProductName())
                     .description(product.getDescription())
+                    .stock(product.getStock())
                     .hubId(product.getHubId())
                     .companyId(product.getCompanyId())
                     .build();
@@ -59,6 +63,7 @@ public interface ProductDto {
         private final UUID productId;
         private final String productName;
         private final String description;
+        private final Integer stock;
         private final UUID hubId;
         private final UUID companyId;
 
@@ -66,6 +71,7 @@ public interface ProductDto {
             this.productId = product.getProductId();
             this.productName = product.getProductName();
             this.description = product.getDescription();
+            this.stock = product.getStock();
             this.hubId = product.getHubId();
             this.companyId = product.getCompanyId();
         }
