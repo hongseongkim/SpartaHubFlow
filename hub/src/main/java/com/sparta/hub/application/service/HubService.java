@@ -4,7 +4,9 @@ import com.sparta.hub.application.dto.HubDto;
 import com.sparta.hub.domain.model.Hub;
 import com.sparta.hub.application.exception.ErrorCode;
 import com.sparta.hub.application.exception.ServiceException;
+import com.sparta.hub.infrastructure.client.MapServiceClient;
 import com.sparta.hub.infrastructure.repository.HubRepository;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,11 +19,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class HubService {
 
     private final HubRepository hubRepository;
+    private final MapServiceClient mapServiceClient;
 
     @Transactional
     public Hub createHub(HubDto hubDto) {
-        Hub hub = Hub.create(hubDto.getName(), hubDto.getAddress());
+
+        // 주소로부터 위도와 경도 정보를 가져옴
+        Map<String, Double> coordinates = mapServiceClient.getCoordinates(hubDto.getAddress());
+
+        // 위도와 경도 값을 가져와 허브 객체 생성
+        Double latitude = coordinates.get("lat");
+        Double longitude = coordinates.get("lng");
+
+        Hub hub = Hub.create(hubDto.getName(), hubDto.getAddress(), latitude, longitude);
+
         return hubRepository.save(hub);
+
     }
 
     @Transactional(readOnly = true)
@@ -54,4 +67,11 @@ public class HubService {
     public Page<Hub> searchHubsByName(String name, Pageable pageable) {
         return hubRepository.searchByName(name, pageable);
     }
+
+    @Transactional(readOnly = true)
+    public Map<String, Double> getCoordinatesForHub(String address) {
+        return mapServiceClient.getCoordinates(address);
+    }
+
+
 }

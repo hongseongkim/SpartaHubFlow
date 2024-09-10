@@ -1,5 +1,6 @@
 package com.sparta.hub.domain.model;
 
+import com.sparta.hub.infrastructure.listener.SoftDeleteListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -13,13 +14,15 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Entity
 @Table(name = "p_hub")
-@EntityListeners(AuditingEntityListener.class)
+@EntityListeners({AuditingEntityListener.class, SoftDeleteListener.class})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Hub {
 
@@ -31,12 +34,23 @@ public class Hub {
     @Column(name = "hub_name", nullable = false)
     private String name;
 
-    @Column(name = "hub_location", nullable = false)
+    @Column(name = "hub_address", nullable = false)
     private String address;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "latitude")
+    private Double latitude;
 
+    @Column(name = "longitude")
+    private Double longitude;
+
+    @Column(name = "hub_manager_id")
+    private Long hubManagerId;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -45,7 +59,7 @@ public class Hub {
 
     @CreatedBy
     @Column(name = "created_by")
-    private String createdBy;
+    private String createdBy = "ADMIN";
 
     @LastModifiedBy
     @Column(name = "updated_by")
@@ -54,12 +68,12 @@ public class Hub {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-    public static Hub create(String name, String address, String createdBy) {
-        return new Hub(null, name, address, createdBy);
-    }
-
     public static Hub create(String name, String address) {
         return new Hub(null, name, address);
+    }
+
+    public static Hub create(String name, String address, Double latitude, Double longitude) {
+        return new Hub(null, name, address, latitude, longitude);
     }
 
     private Hub(UUID hubId, String name, String address) {
@@ -68,11 +82,12 @@ public class Hub {
         this.address = address;
     }
 
-    private Hub(UUID hubId, String name, String address, String createdBy) {
+    private Hub(UUID hubId, String name, String address, Double latitude, Double longitude) {
         this.hubId = hubId;
         this.name = name;
         this.address = address;
-        this.createdBy = createdBy;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public void updateAddress(String newAddress) {
@@ -87,8 +102,12 @@ public class Hub {
         }
     }
 
-    public void softDelete(String deletedBy) {
-        this.deletedBy = deletedBy;
+    public void softDelete() {
         this.deletedAt = LocalDateTime.now();
     }
+
+    public void setDeletedBy(String deletedBy) {
+        this.deletedBy = deletedBy;
+    }
+
 }
