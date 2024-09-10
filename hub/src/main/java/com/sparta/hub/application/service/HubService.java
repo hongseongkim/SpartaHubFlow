@@ -44,9 +44,9 @@ public class HubService {
     }
 
     @Transactional
-    public void softDeleteHub(UUID hubId, String deletedBy) {
+    public void softDeleteHub(UUID hubId) {
         Hub hub = getHubById(hubId);
-        hub.softDelete(deletedBy);
+        hub.softDelete();
         hubRepository.save(hub);
     }
 
