@@ -36,4 +36,7 @@ gradle
 
 ### VS Code ###
 .vscode/
-
+/gradlew
+/gradlew.bat
+/settings.gradle
+/gradle/
