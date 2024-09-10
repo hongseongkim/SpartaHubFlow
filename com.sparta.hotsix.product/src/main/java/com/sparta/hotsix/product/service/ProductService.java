@@ -74,7 +74,7 @@ public class ProductService {
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Product> productList = productRepository.findAllByProductNameAndIsDeletedFalse(name, pageable);
+        Page<Product> productList = productRepository.findAllByProductNameContainingAndIsDeletedFalse(name, pageable);
 
         return productList.map(ProductDto.GetAllProductsResponse::new).stream().toList();
 
