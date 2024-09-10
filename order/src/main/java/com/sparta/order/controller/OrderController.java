@@ -21,7 +21,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public OrderDto.Response getOrder(@PathVariable UUID orderId) {
+    public OrderDto.Response getOrder(@PathVariable(value = "orderId") UUID orderId) {
         return orderService.getOrder(orderId);
     }
 
@@ -35,12 +35,12 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}")
-    public OrderDto.Response modifyOrder(@PathVariable UUID orderId, @RequestBody OrderDto.Modify orderDto) {
+    public OrderDto.Response modifyOrder(@PathVariable(value = "orderId") UUID orderId, @RequestBody OrderDto.Modify orderDto) {
         return orderService.modifyOrder(orderId, orderDto);
     }
 
     @DeleteMapping("/{orderId}")
-    public OrderDto.DeleteResponse deleteOrder(@PathVariable UUID orderId, @RequestBody OrderDto.Delete orderDto) {
+    public OrderDto.DeleteResponse deleteOrder(@PathVariable(value = "orderId") UUID orderId, @RequestBody OrderDto.Delete orderDto) {
         return orderService.deleteOrder(orderId, orderDto);
     }
 }
