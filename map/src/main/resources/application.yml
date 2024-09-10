@@ -1,5 +1,22 @@
+spring:
+  application:
+    name: map-service
+
 server:
-  port: 8090
+  port: ${SERVER_PORT:8090}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${YOUR_EUREKA_SERVER_URI:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 google:
   maps:

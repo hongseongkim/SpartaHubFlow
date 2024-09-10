@@ -17,12 +17,21 @@ repositories {
 	mavenCentral()
 }
 
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
 dependencies {
 	// Spring Boot Web
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
 	// Google Maps API
-	implementation 'com.google.maps:google-maps-services:0.18.0' // Google Maps API
+	implementation 'com.google.maps:google-maps-services:0.18.0'
+
+	// Eureka client
+	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 
 	// Spring Actuator
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -36,6 +45,12 @@ dependencies {
 
 	// JUnit
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.3"
+	}
 }
 
 tasks.named('test') {
