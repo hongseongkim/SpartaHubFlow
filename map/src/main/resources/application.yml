@@ -1,0 +1,12 @@
+server:
+  port: 8090
+
+google:
+  maps:
+    api:
+      key: ${YOUR_GOOGLE_MAPS_API_KEY}
+
+logging:
+  level:
+    root: INFO
+    com.sparta.map: DEBUG
