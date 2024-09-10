@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,7 +25,7 @@ public class ProductService {
     private final HubClient hubClient;
     private final CompanyClient companyClient;
 
-
+    @Transactional
     public ProductDto.Response createProduct(ProductDto.Create productDto) {
 
         if (hubClient.getHubById(productDto.getHubId()) == null) {
@@ -44,6 +45,7 @@ public class ProductService {
         )));
     }
 
+    @Transactional(readOnly = true)
     public ProductDto.Response getProduct(UUID productId) {
 
         Product product = productRepository.findByIdNotDeleted(productId);
@@ -55,6 +57,7 @@ public class ProductService {
         return ProductDto.Response.of(product);
     }
 
+    @Transactional(readOnly = true)
     public List<ProductDto.GetAllProductsResponse> getAllProducts(int page, int size, String sortBy) {
 
         Sort.Direction direction = Sort.Direction.ASC;
@@ -68,6 +71,7 @@ public class ProductService {
 
     }
 
+    @Transactional(readOnly = true)
     public List<ProductDto.GetAllProductsResponse> searchProduct(String name, int page, int size, String sortBy) {
 
         Sort.Direction direction = Sort.Direction.ASC;
@@ -80,6 +84,7 @@ public class ProductService {
 
     }
 
+    @Transactional
     public ProductDto.Response modifyProduct(UUID productId, ProductDto.Modify productDto) {
 
         Product product = productRepository.findByIdNotDeleted(productId);
@@ -99,6 +104,7 @@ public class ProductService {
 
     }
 
+    @Transactional
     public ProductDto.DeleteResponse deleteProduct(UUID productId, ProductDto.Delete productDto) {
 
         if(productRepository.findByIdNotDeleted(productId) == null){
