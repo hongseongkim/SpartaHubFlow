@@ -1,4 +1,4 @@
-package com.sparta.hub.infrastructure.configuration;
+package com.sparta.hub.infrastructure.configuration.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

@@ -1,6 +1,7 @@
-package com.sparta.hub.infrastructure.configuration;
+package com.sparta.hub.infrastructure.configuration.jpa;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.sparta.hub.infrastructure.configuration.auditing.AuditAwareImpl;
 import jakarta.persistence.EntityManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

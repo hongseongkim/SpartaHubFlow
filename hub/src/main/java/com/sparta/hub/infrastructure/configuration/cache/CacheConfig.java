@@ -1,4 +1,4 @@
-package com.sparta.hub.infrastructure.configuration;
+package com.sparta.hub.infrastructure.configuration.cache;
 
 import java.time.Duration;
 import org.springframework.cache.annotation.EnableCaching;

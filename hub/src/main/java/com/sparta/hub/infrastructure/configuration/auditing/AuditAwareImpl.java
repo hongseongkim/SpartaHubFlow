@@ -1,4 +1,4 @@
-package com.sparta.hub.infrastructure.configuration;
+package com.sparta.hub.infrastructure.configuration.auditing;
 
 import java.util.Optional;
 import jakarta.annotation.Nonnull;
