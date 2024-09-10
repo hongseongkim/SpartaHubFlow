@@ -67,11 +67,4 @@ public class HubService {
     public Page<Hub> searchHubsByName(String name, Pageable pageable) {
         return hubRepository.searchByName(name, pageable);
     }
-
-    @Transactional(readOnly = true)
-    public Map<String, Double> getCoordinatesForHub(String address) {
-        return mapServiceClient.getCoordinates(address);
-    }
-
-
 }

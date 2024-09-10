@@ -1,5 +1,6 @@
 package com.sparta.hub.presentation.controller;
 
+import com.sparta.hub.application.exception.ErrorCode;
 import com.sparta.hub.presentation.dto.response.common.ResponseBody;
 import com.sparta.hub.presentation.dto.response.common.ResponseUtil;
 import com.sparta.hub.presentation.dto.response.HubResponseDto;
@@ -13,6 +14,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,8 +37,17 @@ public class HubController {
 
     @PostMapping
     @Operation(summary = "허브 생성", description = "새로운 허브를 생성합니다.")
-    public ResponseEntity<ResponseBody<HubResponseDto>> createHub(
+    public ResponseEntity<?> createHub(
+            // TODO 키 값 수정
+            @RequestHeader("user-role") String userRole,
             @RequestBody @Valid HubRequest hubRequest) {
+
+        // 권한 체크
+        if (!hasManagerRole(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ResponseUtil.createFailureResponse(ErrorCode.UNAUTHORIZED));
+        }
+
         Hub createdHub = hubService.createHub(hubRequest.toDTO());
         return ResponseEntity.ok(ResponseUtil.createSuccessResponse(HubResponseDto.fromEntity(createdHub)));
     }
@@ -57,9 +69,17 @@ public class HubController {
 
     @PatchMapping("/{hubId}")
     @Operation(summary = "허브 수정", description = "ID를 통해 허브 정보를 수정합니다.")
-    public ResponseEntity<ResponseBody<HubResponseDto>> updateHub(
+    public ResponseEntity<?> updateHub(
+            @RequestHeader("user-role") String userRole,
             @PathVariable UUID hubId,
             @RequestBody @Valid HubRequest hubRequest) {
+
+        // 권한 체크
+        if (!hasManagerRole(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ResponseUtil.createFailureResponse(ErrorCode.UNAUTHORIZED));
+        }
+
         Hub updatedHub = hubService.updateHub(hubId, hubRequest.toDTO());
         return ResponseEntity.ok(ResponseUtil.createSuccessResponse(HubResponseDto.fromEntity(updatedHub)));
     }
@@ -67,7 +87,15 @@ public class HubController {
     @DeleteMapping("/{hubId}")
     @Operation(summary = "허브 삭제", description = "ID를 통해 허브를 소프트 삭제합니다.")
     public ResponseEntity<ResponseBody<Void>> softDeleteHub(
+            @RequestHeader("user-role") String userRole,
             @PathVariable UUID hubId) {
+
+        // 권한 체크
+        if (!hasManagerRole(userRole)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ResponseUtil.createFailureResponse(ErrorCode.UNAUTHORIZED));
+        }
+
         hubService.softDeleteHub(hubId);
         return ResponseEntity.ok(ResponseUtil.createSuccessResponse());
     }
@@ -80,5 +108,9 @@ public class HubController {
         Page<Hub> hubs = hubService.searchHubsByName(name, pageable);
         Page<HubResponseDto> responseDTOs = hubs.map(HubResponseDto::fromEntity);
         return ResponseEntity.ok(ResponseUtil.createSuccessResponse(responseDTOs));
+    }
+
+    private boolean hasManagerRole(String userRole) {
+        return "HUB_MANAGER".equals(userRole);
     }
 }
