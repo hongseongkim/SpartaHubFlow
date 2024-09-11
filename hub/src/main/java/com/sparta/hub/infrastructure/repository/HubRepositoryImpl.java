@@ -40,6 +40,15 @@ public class HubRepositoryImpl implements HubCustomRepository {
     }
 
     @Override
+    public List<Hub> findAllByIsDeletedFalse() {
+        QHub hub = QHub.hub;
+
+        return queryFactory.selectFrom(hub)
+                .where(hub.isDeleted.eq(false))
+                .fetch();
+    }
+
+    @Override
     public Page<Hub> findAllByIsDeletedFalse(Pageable pageable) {
         QHub hub = QHub.hub;
 
