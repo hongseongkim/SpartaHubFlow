@@ -1,6 +1,7 @@
 package com.sparta.hub.domain.model;
 
-import com.sparta.hub.infrastructure.listener.SoftDeleteListener;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sparta.hub.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -22,8 +23,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Getter
 @Entity
 @Table(name = "p_hub")
-@EntityListeners({AuditingEntityListener.class, SoftDeleteListener.class})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners({AuditingEntityListener.class, SoftDeleteListener.class})
 public class Hub {
 
     @Id
