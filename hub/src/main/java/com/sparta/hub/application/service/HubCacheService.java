@@ -37,10 +37,8 @@ public class HubCacheService {
         // 캐시에서 값 삭제
     }
 
-    @Cacheable(value = "hubs_all", key = "'List<Hub>:' + #pageable.pageNumber + '_' + #pageable.pageSize", unless = "#result.empty")
     @Transactional(readOnly = true)
     public List<Hub> getAllHubs(Pageable pageable) {
-        // 캐시에 값이 없으면 이 메서드가 실행되어 결과를 캐시에 저장
         Page<Hub> allHubs = hubRepository.findAllByIsDeletedFalse(pageable);
         return allHubs.getContent();
     }
