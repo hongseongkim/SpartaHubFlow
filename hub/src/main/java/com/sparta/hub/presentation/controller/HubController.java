@@ -5,6 +5,7 @@ import com.sparta.hub.presentation.dto.response.HubResponseDto;
 import com.sparta.hub.domain.model.Hub;
 import com.sparta.hub.domain.service.HubServiceImpl;
 import com.sparta.hub.presentation.dto.request.HubRequest;
+import com.sparta.hub.presentation.utils.PageableUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -55,6 +56,10 @@ public class HubController {
     @GetMapping
     @Operation(summary = "허브 목록 조회", description = "모든 허브 목록을 조회합니다.")
     public ResponseEntity<Page<HubResponseDto>> getAllHubs(Pageable pageable) {
+
+        pageable = PageableUtils.applyPageSizeLimit(pageable);
+        pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
+
         Page<Hub> hubs = hubServiceImpl.getAllHubs(pageable);
         return ResponseEntity.ok(hubs.map(HubResponseDto::fromEntity));
     }
@@ -89,6 +94,10 @@ public class HubController {
     public ResponseEntity<Page<HubResponseDto>> searchHubsByName(
             @RequestParam String name,
             Pageable pageable) {
+
+        pageable = PageableUtils.applyPageSizeLimit(pageable);
+        pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
+
         Page<Hub> hubs = hubServiceImpl.searchHubsByName(name, pageable);
         return ResponseEntity.ok(hubs.map(HubResponseDto::fromEntity));
     }
