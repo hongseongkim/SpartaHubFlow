@@ -27,9 +27,12 @@ public class HubService {
         // 주소로부터 위도와 경도 정보를 가져옴
         Map<String, Double> coordinates = mapServiceClient.getCoordinates(hubDto.getAddress());
 
-        // 위도와 경도 값을 가져와 허브 객체 생성
         Double latitude = coordinates.get("lat");
         Double longitude = coordinates.get("lng");
+
+        // 유효성 검사
+        validateCoordinates(latitude, longitude);
+        validateNameAndAddress(hubDto.getName(), hubDto.getAddress());
 
         Hub hub = Hub.create(hubDto.getName(), hubDto.getAddress(), latitude, longitude);
 
@@ -39,20 +42,45 @@ public class HubService {
 
     @Transactional(readOnly = true)
     public Hub getHubById(UUID hubId) {
-        return hubRepository.findById(hubId)
-                .orElseThrow(() -> new ServiceException(ErrorCode.NOT_FOUND));
+
+        Hub hub = hubRepository.findByIdAndIsDeletedFalse(hubId);
+
+        if (hub == null) {
+            throw new ServiceException(ErrorCode.HUB_NOT_FOUND);
+        }
+
+        return hub;
     }
 
     @Transactional(readOnly = true)
     public Page<Hub> getAllHubs(Pageable pageable) {
-        return hubRepository.findAllByDeletedAtIsNull(pageable);
+        return hubRepository.findAllByIsDeletedFalse(pageable);
     }
 
     @Transactional
     public Hub updateHub(UUID hubId, HubDto hubDto) {
+
+        validateNameAndAddress(hubDto.getName(), hubDto.getAddress());
+
         Hub hub = getHubById(hubId);
-        hub.updateName(hub.getName());
-        hub.updateAddress(hubDto.getAddress());
+        hub.updateName(hubDto.getName());
+
+        // 주소가 변경되었는지 확인
+        if (!hub.getAddress().equals(hubDto.getAddress())) {
+
+            hub.updateAddress(hubDto.getAddress());
+
+            // 새 주소로부터 위도와 경도 정보를 가져옴
+            Map<String, Double> coordinates = mapServiceClient.getCoordinates(hubDto.getAddress());
+
+            // 새 위도와 경도 값을 설정
+            Double latitude = coordinates.get("lat");
+            Double longitude = coordinates.get("lng");
+
+            validateCoordinates(latitude, longitude);
+            hub.updateCoordinates(latitude, longitude);
+        }
+
         return hubRepository.save(hub);
     }
 
@@ -66,5 +94,28 @@ public class HubService {
     @Transactional(readOnly = true)
     public Page<Hub> searchHubsByName(String name, Pageable pageable) {
         return hubRepository.searchByName(name, pageable);
+    }
+
+    private void validateNameAndAddress(String name, String address) {
+        if (name == null || name.isEmpty()) {
+            throw new ServiceException(ErrorCode.NULL_OR_EMPTY_VALUE);
+        }
+        if (address == null || address.isEmpty()) {
+            throw new ServiceException(ErrorCode.NULL_OR_EMPTY_VALUE);
+        }
+    }
+
+    private void validateCoordinates(Double latitude, Double longitude) {
+        if (!isValidLatitude(latitude) || !isValidLongitude(longitude)) {
+            throw new ServiceException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+    }
+
+    private boolean isValidLatitude(Double latitude) {
+        return latitude != null && latitude >= -90 && latitude <= 90;
+    }
+
+    private boolean isValidLongitude(Double longitude) {
+        return longitude != null && longitude >= -180 && longitude <= 180;
     }
 }

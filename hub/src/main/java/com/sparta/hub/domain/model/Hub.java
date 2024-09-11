@@ -46,6 +46,9 @@ public class Hub {
     @Column(name = "hub_manager_id")
     private Long hubManagerId;
 
+    @Column(name = "is_deleted")
+    private boolean isDeleted;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -68,18 +71,8 @@ public class Hub {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-    public static Hub create(String name, String address) {
-        return new Hub(null, name, address);
-    }
-
     public static Hub create(String name, String address, Double latitude, Double longitude) {
         return new Hub(null, name, address, latitude, longitude);
-    }
-
-    private Hub(UUID hubId, String name, String address) {
-        this.hubId = hubId;
-        this.name = name;
-        this.address = address;
     }
 
     private Hub(UUID hubId, String name, String address, Double latitude, Double longitude) {
@@ -90,20 +83,22 @@ public class Hub {
         this.longitude = longitude;
     }
 
-    public void updateAddress(String newAddress) {
-        if (newAddress != null && !newAddress.isEmpty()) {
-            this.address = newAddress;
-        }
+    public void updateName(String newName) {
+        this.name = newName;
     }
 
-    public void updateName(String newName) {
-        if (newName != null && !newName.isEmpty()) {
-            this.name = newName;
-        }
+    public void updateAddress(String newAddress) {
+        this.address = newAddress;
+    }
+
+    public void updateCoordinates(Double newLatitude, Double newLongitude) {
+        this.latitude = newLatitude;
+        this.longitude = newLongitude;
     }
 
     public void softDelete() {
         this.deletedAt = LocalDateTime.now();
+        this.isDeleted = true;
     }
 
     public void setDeletedBy(String deletedBy) {
