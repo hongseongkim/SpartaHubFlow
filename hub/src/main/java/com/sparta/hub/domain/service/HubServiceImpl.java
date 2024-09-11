@@ -1,4 +1,4 @@
-package com.sparta.hub.application.service;
+package com.sparta.hub.domain.service;
 
 import com.sparta.hub.application.dto.HubDto;
 import com.sparta.hub.domain.model.Hub;
@@ -16,11 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class HubService {
+public class HubServiceImpl implements HubService {
 
     private final HubRepository hubRepository;
     private final MapServiceClient mapServiceClient;
 
+    @Override
     @Transactional
     public Hub createHub(HubDto hubDto) {
 
@@ -30,7 +31,6 @@ public class HubService {
         Double latitude = coordinates.get("lat");
         Double longitude = coordinates.get("lng");
 
-        // 유효성 검사
         validateCoordinates(latitude, longitude);
         validateNameAndAddress(hubDto.getName(), hubDto.getAddress());
 
@@ -40,23 +40,7 @@ public class HubService {
 
     }
 
-    @Transactional(readOnly = true)
-    public Hub getHubById(UUID hubId) {
-
-        Hub hub = hubRepository.findByIdAndIsDeletedFalse(hubId);
-
-        if (hub == null) {
-            throw new ServiceException(ErrorCode.HUB_NOT_FOUND);
-        }
-
-        return hub;
-    }
-
-    @Transactional(readOnly = true)
-    public Page<Hub> getAllHubs(Pageable pageable) {
-        return hubRepository.findAllByIsDeletedFalse(pageable);
-    }
-
+    @Override
     @Transactional
     public Hub updateHub(UUID hubId, HubDto hubDto) {
 
@@ -73,7 +57,6 @@ public class HubService {
             // 새 주소로부터 위도와 경도 정보를 가져옴
             Map<String, Double> coordinates = mapServiceClient.getCoordinates(hubDto.getAddress());
 
-            // 새 위도와 경도 값을 설정
             Double latitude = coordinates.get("lat");
             Double longitude = coordinates.get("lng");
 
@@ -84,6 +67,7 @@ public class HubService {
         return hubRepository.save(hub);
     }
 
+    @Override
     @Transactional
     public void softDeleteHub(UUID hubId) {
         Hub hub = getHubById(hubId);
@@ -91,6 +75,26 @@ public class HubService {
         hubRepository.save(hub);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Hub getHubById(UUID hubId) {
+
+        Hub hub = hubRepository.findByIdAndIsDeletedFalse(hubId);
+
+        if (hub == null) {
+            throw new ServiceException(ErrorCode.HUB_NOT_FOUND);
+        }
+
+        return hub;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Hub> getAllHubs(Pageable pageable) {
+        return hubRepository.findAllByIsDeletedFalse(pageable);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Page<Hub> searchHubsByName(String name, Pageable pageable) {
         return hubRepository.searchByName(name, pageable);
