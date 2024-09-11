@@ -18,6 +18,16 @@ public class HubRepositoryImpl implements HubCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
+    public long countByIsDeletedFalse() {
+        QHub hub = QHub.hub;
+
+        return queryFactory
+                .selectFrom(hub)
+                .where(hub.isDeleted.eq(false))
+                .fetch().size();
+    }
+
+    @Override
     public Hub findByIdAndIsDeletedFalse(UUID id) {
         QHub hub = QHub.hub;
         return queryFactory.selectFrom(hub)
