@@ -1,15 +1,19 @@
 package com.sparta.hub.domain.service;
 
 import com.sparta.hub.application.dto.HubDto;
+import com.sparta.hub.application.service.HubCacheService;
 import com.sparta.hub.domain.model.Hub;
 import com.sparta.hub.application.exception.ErrorCode;
 import com.sparta.hub.application.exception.ServiceException;
 import com.sparta.hub.infrastructure.client.MapServiceClient;
 import com.sparta.hub.infrastructure.repository.HubRepository;
+
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +24,7 @@ public class HubServiceImpl implements HubService {
 
     private final HubRepository hubRepository;
     private final MapServiceClient mapServiceClient;
+    private final HubCacheService hubCacheService;
 
     @Override
     @Transactional
@@ -64,7 +69,8 @@ public class HubServiceImpl implements HubService {
             hub.updateCoordinates(latitude, longitude);
         }
 
-        return hubRepository.save(hub);
+        Hub updatedHub = hubRepository.save(hub);
+        return hubCacheService.cacheHub(updatedHub);
     }
 
     @Override
@@ -73,25 +79,21 @@ public class HubServiceImpl implements HubService {
         Hub hub = getHubById(hubId);
         hub.softDelete();
         hubRepository.save(hub);
+        hubCacheService.evictHub(hubId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Hub getHubById(UUID hubId) {
-
-        Hub hub = hubRepository.findByIdAndIsDeletedFalse(hubId);
-
-        if (hub == null) {
-            throw new ServiceException(ErrorCode.HUB_NOT_FOUND);
-        }
-
-        return hub;
+        return hubCacheService.getHub(hubId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<Hub> getAllHubs(Pageable pageable) {
-        return hubRepository.findAllByIsDeletedFalse(pageable);
+        List<Hub> hubs = hubCacheService.getAllHubs(pageable);
+        long total = hubRepository.countByIsDeletedFalse();
+        return new PageImpl<>(hubs, pageable, total);
     }
 
     @Override
