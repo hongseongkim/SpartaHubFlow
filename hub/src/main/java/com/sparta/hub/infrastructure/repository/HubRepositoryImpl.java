@@ -6,6 +6,7 @@ import com.sparta.hub.domain.model.QHub;
 
 import com.sparta.hub.domain.repository.HubCustomRepository;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,14 +18,43 @@ public class HubRepositoryImpl implements HubCustomRepository {
     private final JPAQueryFactory queryFactory;
 
     @Override
+    public Hub findByIdAndIsDeletedFalse(UUID id) {
+        QHub hub = QHub.hub;
+        return queryFactory.selectFrom(hub)
+                .where(hub.hubId.eq(id)
+                        .and(hub.isDeleted.eq(false)))
+                .fetchOne();
+    }
+
+    @Override
+    public Page<Hub> findAllByIsDeletedFalse(Pageable pageable) {
+        QHub hub = QHub.hub;
+
+        List<Hub> results = queryFactory.selectFrom(hub)
+                .where(hub.isDeleted.eq(false))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory.selectFrom(hub)
+                .where(hub.isDeleted.eq(false))
+                .fetch().size();
+
+        return new PageImpl<>(results, pageable, total);
+
+    }
+
+    @Override
     public Page<Hub> searchByName(String name, Pageable pageable) {
         QHub hub = QHub.hub;
 
         List<Hub> results = queryFactory.selectFrom(hub)
                 .where(hub.name.containsIgnoreCase(name)
-                        .and(hub.deletedAt.isNull())) // 소프트 삭제된 항목 제외
-                .offset(pageable.getOffset())   // 페이지 시작점
-                .limit(pageable.getPageSize())  // 페이지 크기
+                        .and(hub.isDeleted.eq(false)))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+
+
                 .fetch();
 
         long total = queryFactory.selectFrom(hub)
