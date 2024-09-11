@@ -21,7 +21,7 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ProductDto.Response getProduct(@PathVariable UUID productId) {
+    public ProductDto.Response getProduct(@PathVariable(value = "productId") UUID productId) {
         return productService.getProduct(productId);
     }
 
@@ -45,12 +45,14 @@ public class ProductController {
     }
 
     @PatchMapping("/{productId}")
-    public ProductDto.Response modifyProduct(@PathVariable UUID productId, @RequestBody ProductDto.Modify productDto) {
+    public ProductDto.Response modifyProduct(@PathVariable(value = "productId") UUID productId,
+                                             @RequestBody ProductDto.Modify productDto) {
         return productService.modifyProduct(productId, productDto);
     }
 
     @DeleteMapping("/{productId}")
-    public ProductDto.DeleteResponse deleteProduct(@PathVariable UUID productId, @RequestBody ProductDto.Delete productDto) {
+    public ProductDto.DeleteResponse deleteProduct(@PathVariable(value = "productId") UUID productId,
+                                                   @RequestBody ProductDto.Delete productDto) {
         return productService.deleteProduct(productId, productDto);
     }
 

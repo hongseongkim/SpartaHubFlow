@@ -21,7 +21,9 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     Page<Product> findAllByIsDeletedFalse(Pageable pageable);
 
-    Page<Product> findAllByProductNameAndIsDeletedFalse(String productName, Pageable pageable);
+    @Query("SELECT p FROM Product p WHERE p.productName LIKE %:productName% AND p.isDeleted = false")
+    Page<Product> findAllByProductNameContainingAndIsDeletedFalse(@Param("productName") String productName,
+                                                                  Pageable pageable);
 
     @Modifying
     @Query("UPDATE Product p SET p.deletedAt = :deletedAt, p.deletedBy = :deletedBy, p.isDeleted = true " +
