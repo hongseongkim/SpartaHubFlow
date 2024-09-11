@@ -25,9 +25,8 @@ public class SoftDeleteListener {
         if (requestAttributes instanceof ServletRequestAttributes servletRequestAttributes) {
             HttpServletRequest request = servletRequestAttributes.getRequest();
 
-            // TODO 키 값 수정
-            // 헤더에서 user-id 값 추출
-            String userId = request.getHeader("user-id");
+            // 헤더에서 User-Id 값 추출
+            String userId = request.getHeader("User-Id");
 
             if (userId != null && !userId.isEmpty()) {
                 return Optional.of(userId); // user-id가 있으면 반환
