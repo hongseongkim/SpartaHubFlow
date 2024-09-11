@@ -1,9 +1,16 @@
 package com.sparta.hub.infrastructure.configuration.cache;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -15,25 +22,52 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
     @Bean
-    public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-        // 기본 캐시 설정 구성
+    @Primary  // Redis에서 사용할 기본 ObjectMapper
+    public ObjectMapper redisObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        // Redis 캐싱을 위해서만 DefaultTyping 활성화
+        objectMapper.activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+        return objectMapper;
+    }
+
+    @Bean(name = "responseObjectMapper")  // Bean 이름을 명시적으로 지정
+    public ObjectMapper responseObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        // API 응답에 타입 정보를 포함하지 않음
+        objectMapper.deactivateDefaultTyping();
+        return objectMapper;
+    }
+
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory, ObjectMapper redisObjectMapper) {
+        GenericJackson2JsonRedisSerializer serializer = new GenericJackson2JsonRedisSerializer(redisObjectMapper);
+
         RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration
                 .defaultCacheConfig()
-                // null 값 캐싱 방지
                 .disableCachingNullValues()
-                // 캐시 TTL(Time To Live) 설정
                 .entryTtl(Duration.ofDays(1))
-                // 캐시 키에 대한 접두사 설정
                 .computePrefixWith(CacheKeyPrefix.simple())
-                // 캐시 값 직렬화 설정
-                .serializeValuesWith(SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-                // 캐시 키 직렬화를 String으로 설정 (가독성 향상)
-                .serializeKeysWith(SerializationPair.fromSerializer(new StringRedisSerializer()));
+                .serializeKeysWith(SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeValuesWith(SerializationPair.fromSerializer(serializer));
 
-        // RedisCacheManager 생성 및 설정 적용
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(defaultCacheConfig)
                 .build();
     }
 }
+
+
