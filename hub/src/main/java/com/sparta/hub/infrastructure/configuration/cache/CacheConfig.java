@@ -24,7 +24,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class CacheConfig {
 
     @Bean
-    @Primary  // Redis에서 사용할 기본 ObjectMapper
     public ObjectMapper redisObjectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
@@ -37,18 +36,6 @@ public class CacheConfig {
                 ObjectMapper.DefaultTyping.NON_FINAL,
                 JsonTypeInfo.As.PROPERTY
         );
-        return objectMapper;
-    }
-
-    @Bean(name = "responseObjectMapper")  // Bean 이름을 명시적으로 지정
-    public ObjectMapper responseObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
-        // API 응답에 타입 정보를 포함하지 않음
-        objectMapper.deactivateDefaultTyping();
         return objectMapper;
     }
 
