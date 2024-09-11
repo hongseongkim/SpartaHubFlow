@@ -1,4 +1,4 @@
-package com.sparta.hub.infrastructure.listener;
+package com.sparta.hub.infrastructure.configuration.auditing.listener;
 
 import com.sparta.hub.domain.model.Hub;
 import jakarta.persistence.PreUpdate;
