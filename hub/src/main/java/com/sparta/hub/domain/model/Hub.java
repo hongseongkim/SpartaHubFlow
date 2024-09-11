@@ -1,6 +1,5 @@
 package com.sparta.hub.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sparta.hub.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,7 +62,7 @@ public class Hub {
 
     @CreatedBy
     @Column(name = "created_by")
-    private String createdBy = "ADMIN";
+    private String createdBy;
 
     @LastModifiedBy
     @Column(name = "updated_by")
