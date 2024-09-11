@@ -23,7 +23,7 @@ public class PageableUtils {
     public static Pageable applyDefaultSortIfNecessary(Pageable pageable) {
         Sort sort = pageable.getSort();
         if (sort.get().noneMatch(order -> order.getProperty().equals("createdAt") || order.getProperty().equals("updatedAt"))) {
-            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Order.desc("createdAt")));
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Order.asc("createdAt")));
         }
         return pageable;
     }
