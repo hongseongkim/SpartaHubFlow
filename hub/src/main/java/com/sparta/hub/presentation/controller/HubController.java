@@ -8,7 +8,6 @@ import com.sparta.hub.domain.model.Hub;
 import com.sparta.hub.domain.service.HubServiceImpl;
 import com.sparta.hub.presentation.dto.request.HubRequest;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/hubs")
-@Tag(name = "Hub API", description = "허브 관리 API")
 public class HubController {
 
     private final HubServiceImpl hubServiceImpl;
