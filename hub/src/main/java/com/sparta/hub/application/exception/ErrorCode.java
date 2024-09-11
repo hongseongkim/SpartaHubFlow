@@ -17,7 +17,8 @@ public enum ErrorCode {
     NOT_EXIST_API(HttpStatus.BAD_REQUEST, "COMMON_0006", "요청 주소가 올바르지 않습니다."),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "COMMON_0007", "사용할 수 없는 메서드입니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_0008", "요청한 리소스를 찾을 수 없습니다."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_0009", "서버 에러입니다."),
+    ENTITY_NOT_FOUND(HttpStatus.NOT_FOUND, "COMMON_0009", "요청한 엔티티를 찾을 수 없습니다."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "COMMON_0010", "서버 에러입니다."),
 
     // Authentication & Authorization Errors
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "AUTH_0001", "인증에 실패하였습니다."),
