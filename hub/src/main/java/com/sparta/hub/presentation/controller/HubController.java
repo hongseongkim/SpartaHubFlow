@@ -1,18 +1,20 @@
 package com.sparta.hub.presentation.controller;
 
 import com.sparta.hub.application.service.AuthorizationService;
-import com.sparta.hub.presentation.dto.response.common.ResponseBody;
-import com.sparta.hub.presentation.dto.response.common.ResponseUtil;
 import com.sparta.hub.presentation.dto.response.HubResponseDto;
 import com.sparta.hub.domain.model.Hub;
 import com.sparta.hub.domain.service.HubServiceImpl;
 import com.sparta.hub.presentation.dto.request.HubRequest;
+import com.sparta.hub.presentation.utils.PageableUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +37,7 @@ public class HubController {
 
     @PostMapping
     @Operation(summary = "허브 생성", description = "새로운 허브를 생성합니다.")
-    public ResponseEntity<ResponseBody<HubResponseDto>> createHub(
+    public ResponseEntity<HubResponseDto> createHub(
             @RequestHeader(value = "User-Role", required = false) String userRole,
             @RequestBody @Valid HubRequest hubRequest) {
 
@@ -43,27 +45,12 @@ public class HubController {
 
         Hub createdHub = hubServiceImpl.createHub(hubRequest.toDTO());
 
-        return ResponseEntity.ok(ResponseUtil.createSuccessResponse(HubResponseDto.fromEntity(createdHub)));
-    }
-
-    @GetMapping("/{hubId}")
-    @Operation(summary = "허브 조회", description = "ID를 통해 허브를 조회합니다.")
-    public ResponseEntity<ResponseBody<HubResponseDto>> getHubById(@PathVariable UUID hubId) {
-        Hub hub = hubServiceImpl.getHubById(hubId);
-        return ResponseEntity.ok(ResponseUtil.createSuccessResponse(HubResponseDto.fromEntity(hub)));
-    }
-
-    @GetMapping
-    @Operation(summary = "허브 목록 조회", description = "모든 허브 목록을 조회합니다.")
-    public ResponseEntity<ResponseBody<Page<HubResponseDto>>> getAllHubs(Pageable pageable) {
-        Page<Hub> hubs = hubServiceImpl.getAllHubs(pageable);
-        Page<HubResponseDto> responseDTOs = hubs.map(HubResponseDto::fromEntity);
-        return ResponseEntity.ok(ResponseUtil.createSuccessResponse(responseDTOs));
+        return ResponseEntity.status(HttpStatus.CREATED).body(HubResponseDto.fromEntity(createdHub));
     }
 
     @PatchMapping("/{hubId}")
     @Operation(summary = "허브 수정", description = "ID를 통해 허브 정보를 수정합니다.")
-    public ResponseEntity<ResponseBody<HubResponseDto>> updateHub(
+    public ResponseEntity<HubResponseDto> updateHub(
             @RequestHeader(value = "User-Role", required = false) String userRole,
             @PathVariable UUID hubId,
             @RequestBody @Valid HubRequest hubRequest) {
@@ -71,28 +58,64 @@ public class HubController {
         authorizationService.validateManagerRole(userRole);
 
         Hub updatedHub = hubServiceImpl.updateHub(hubId, hubRequest.toDTO());
-        return ResponseEntity.ok(ResponseUtil.createSuccessResponse(HubResponseDto.fromEntity(updatedHub)));
+        return ResponseEntity.ok(HubResponseDto.fromEntity(updatedHub));
     }
 
     @DeleteMapping("/{hubId}")
     @Operation(summary = "허브 삭제", description = "ID를 통해 허브를 소프트 삭제합니다.")
-    public ResponseEntity<ResponseBody<Void>> softDeleteHub(
+    public ResponseEntity<Void> softDeleteHub(
             @RequestHeader(value = "User-Role", required = false) String userRole,
             @PathVariable UUID hubId) {
 
         authorizationService.validateManagerRole(userRole);
 
         hubServiceImpl.softDeleteHub(hubId);
-        return ResponseEntity.ok(ResponseUtil.createSuccessResponse());
+        return ResponseEntity.noContent().build();
     }
+
+
+    @GetMapping("/{hubId}")
+    @Operation(summary = "허브 조회", description = "ID를 통해 허브를 조회합니다.")
+    public ResponseEntity<HubResponseDto> getHubById(@PathVariable UUID hubId) {
+        Hub hub = hubServiceImpl.getHubById(hubId);
+        return ResponseEntity.ok(HubResponseDto.fromEntity(hub));
+    }
+
+    @GetMapping
+    @Operation(summary = "허브 목록 조회", description = "모든 허브 목록을 조회합니다.")
+    public ResponseEntity<Page<HubResponseDto>> getAllHubs(Pageable pageable) {
+
+        pageable = PageableUtils.applyPageSizeLimit(pageable);
+        pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
+
+        Page<Hub> hubs = hubServiceImpl.getAllHubs(pageable);
+        return ResponseEntity.ok(hubs.map(HubResponseDto::fromEntity));
+    }
+
+    @GetMapping("/full-list")
+    @Operation(summary = "전체 허브 목록 조회", description = "페이지네이션 없이 모든 허브 목록을 조회합니다.")
+    public ResponseEntity<List<HubResponseDto>> getAllHubsWithoutPagination() {
+        List<Hub> hubs = hubServiceImpl.getAllHubsWithoutPagination();
+        List<HubResponseDto> hubResponseDtos = hubs.stream()
+                .map(HubResponseDto::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(hubResponseDtos);
+    }
+
 
     @GetMapping("/search")
     @Operation(summary = "허브 이름 검색", description = "허브 이름을 통해 검색합니다.")
-    public ResponseEntity<ResponseBody<Page<HubResponseDto>>> searchHubsByName(
+    public ResponseEntity<Page<HubResponseDto>> searchHubsByName(
             @RequestParam String name,
             Pageable pageable) {
+
+        pageable = PageableUtils.applyPageSizeLimit(pageable);
+        pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
+
         Page<Hub> hubs = hubServiceImpl.searchHubsByName(name, pageable);
-        Page<HubResponseDto> responseDTOs = hubs.map(HubResponseDto::fromEntity);
-        return ResponseEntity.ok(ResponseUtil.createSuccessResponse(responseDTOs));
+        return ResponseEntity.ok(hubs.map(HubResponseDto::fromEntity));
     }
+
+
+
 }

@@ -1,6 +1,7 @@
-package com.sparta.hub.domain.model;
+package com.sparta.route.domain.model;
 
-import com.sparta.hub.infrastructure.configuration.auditing.listener.SoftDeleteListener;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.sparta.route.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -19,38 +20,36 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+
 @Getter
 @Entity
-@Table(name = "p_hub")
+@Table(name = "p_hub_route")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners({AuditingEntityListener.class, SoftDeleteListener.class})
-public class Hub {
+public class HubRoute {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "hub_id", updatable = false, nullable = false)
-    private UUID hubId;
+    @Column(name = "hub_route_id")
+    private UUID hubRouteId;
 
-    @Column(name = "hub_name", nullable = false)
-    private String name;
+    @Column(name = "origin_hub_id")
+    private UUID originHubId;
 
-    @Column(name = "hub_address", nullable = false)
-    private String address;
+    @Column(name = "destination_hub_id")
+    private UUID destinationHubId;
 
-    @Column(name = "latitude")
-    private Double latitude;
+    @Column(name = "estimated_time")
+    private Integer estimatedTime;
 
-    @Column(name = "longitude")
-    private Double longitude;
-
-    @Column(name = "hub_manager_id")
-    private Long hubManagerId;
+    @Column(name = "route_display_name")
+    private String routeDisplayName;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted;
+    private Boolean isDeleted = false;
 
     @CreatedDate
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @LastModifiedDate
@@ -62,7 +61,7 @@ public class Hub {
 
     @CreatedBy
     @Column(name = "created_by")
-    private String createdBy;
+    private String createdBy = "ADMIN";
 
     @LastModifiedBy
     @Column(name = "updated_by")
@@ -71,29 +70,22 @@ public class Hub {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-    public static Hub create(String name, String address, Double latitude, Double longitude) {
-        return new Hub(null, name, address, latitude, longitude);
+    public static HubRoute create(UUID originHubId, UUID destinationHubId) {
+        return new HubRoute(null, originHubId, destinationHubId);
     }
 
-    private Hub(UUID hubId, String name, String address, Double latitude, Double longitude) {
-        this.hubId = hubId;
-        this.name = name;
-        this.address = address;
-        this.latitude = latitude;
-        this.longitude = longitude;
+    private HubRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId) {
+        this.hubRouteId = hubRouteId;
+        this.originHubId = originHubId;
+        this.destinationHubId = destinationHubId;
     }
 
-    public void updateName(String newName) {
-        this.name = newName;
+    public void updateEstimatedTime(Integer estimatedTime) {
+        this.estimatedTime = estimatedTime;
     }
 
-    public void updateAddress(String newAddress) {
-        this.address = newAddress;
-    }
-
-    public void updateCoordinates(Double newLatitude, Double newLongitude) {
-        this.latitude = newLatitude;
-        this.longitude = newLongitude;
+    public void updateRouteDisplayName(String routeDisplayName) {
+        this.routeDisplayName = routeDisplayName;
     }
 
     public void softDelete() {
@@ -104,5 +96,4 @@ public class Hub {
     public void setDeletedBy(String deletedBy) {
         this.deletedBy = deletedBy;
     }
-
 }
