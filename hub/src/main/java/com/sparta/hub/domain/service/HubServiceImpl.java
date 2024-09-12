@@ -96,6 +96,11 @@ public class HubServiceImpl implements HubService {
         return new PageImpl<>(hubs, pageable, total);
     }
 
+    @Transactional(readOnly = true)
+    public List<Hub> getAllHubsWithoutPagination() {
+        return hubRepository.findAllByIsDeletedFalse();
+    }
+
     @Override
     @Transactional(readOnly = true)
     public Page<Hub> searchHubsByName(String name, Pageable pageable) {

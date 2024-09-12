@@ -1,6 +1,7 @@
 package com.sparta.hub.presentation.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.sparta.hub.domain.model.Hub;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import lombok.Getter;
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 public class HubResponseDto {
 
     private UUID id;

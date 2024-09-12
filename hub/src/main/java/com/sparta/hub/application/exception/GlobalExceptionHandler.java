@@ -1,7 +1,5 @@
 package com.sparta.hub.application.exception;
 
-import com.sparta.hub.presentation.dto.response.common.ResponseBody;
-import com.sparta.hub.presentation.dto.response.common.ResponseUtil;
 import jakarta.persistence.EntityNotFoundException;
 import java.nio.file.AccessDeniedException;
 import java.util.Objects;
@@ -33,7 +31,7 @@ public class GlobalExceptionHandler {
      * 주로 @Valid 어노테이션을 사용한 검증에서 발생합니다.
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseBody<Void>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         String errorMessage = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
         log.error("MethodArgumentNotValidException : {}", errorMessage);
         return buildErrorResponse(ErrorCode.INVALID_INPUT_VALUE, errorMessage);
@@ -44,7 +42,7 @@ public class GlobalExceptionHandler {
      * 주로 @Validated 어노테이션을 사용한 컨트롤러 메서드 파라미터 검증에서 발생합니다.
      */
     @ExceptionHandler(HandlerMethodValidationException.class)
-    public ResponseEntity<ResponseBody<Void>> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
+    public ResponseEntity<ErrorResponse> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
         String errorMessage = (String) Objects.requireNonNull(e.getDetailMessageArguments())[0];
         logError(e);
         return buildErrorResponse(ErrorCode.MISSING_INPUT_VALUE, errorMessage);
@@ -55,7 +53,7 @@ public class GlobalExceptionHandler {
      * 주로 @RequestParam, @PathVariable 등의 필수 파라미터가 누락된 경우 발생합니다.
      */
     @ExceptionHandler(MissingRequestValueException.class)
-    public ResponseEntity<ResponseBody<Void>> handleMissingRequestValueException(MissingRequestValueException e) {
+    public ResponseEntity<ErrorResponse> handleMissingRequestValueException(MissingRequestValueException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.MISSING_INPUT_VALUE);
     }
@@ -65,7 +63,7 @@ public class GlobalExceptionHandler {
      * 예를 들어, 정수형 파라미터에 문자열이 입력된 경우 발생합니다.
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ResponseBody<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.INVALID_INPUT_VALUE);
     }
@@ -74,7 +72,7 @@ public class GlobalExceptionHandler {
      * 비즈니스 로직에서 유효하지 않은 인자가 사용되었을 때 발생하는 예외를 처리합니다.
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ResponseBody<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.INVALID_INPUT_VALUE);
     }
@@ -86,7 +84,7 @@ public class GlobalExceptionHandler {
      * 주로 잘못된 형식의 JSON이 전송되었을 때 발생합니다.
      */
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ResponseBody<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.INVALID_JSON);
     }
@@ -95,7 +93,7 @@ public class GlobalExceptionHandler {
      * 지원하지 않는 HTTP 메소드로 요청이 왔을 때 발생하는 예외를 처리합니다.
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ResponseBody<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
+    public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.METHOD_NOT_ALLOWED);
     }
@@ -105,7 +103,7 @@ public class GlobalExceptionHandler {
      * 주로 존재하지 않는 API 엔드포인트로 요청이 왔을 때 발생합니다.
      */
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ResponseBody<Void>> handleNoHandlerFoundException(NoHandlerFoundException e) {
+    public ResponseEntity<ErrorResponse> handleNoHandlerFoundException(NoHandlerFoundException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.NOT_EXIST_API);
     }
@@ -116,7 +114,7 @@ public class GlobalExceptionHandler {
      * 요청한 엔티티를 찾을 수 없을 때 발생하는 예외를 처리합니다.
      */
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ResponseBody<Void>> handleEntityNotFoundException(EntityNotFoundException e) {
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.ENTITY_NOT_FOUND, e.getMessage());
     }
@@ -126,7 +124,7 @@ public class GlobalExceptionHandler {
      * 비즈니스 로직에서 발생하는 예외들을 처리합니다.
      */
     @ExceptionHandler(ServiceException.class)
-    public ResponseEntity<ResponseBody<Void>> handleServiceException(ServiceException e) {
+    public ResponseEntity<ErrorResponse> handleServiceException(ServiceException e) {
         logError(e);
         return buildErrorResponse(e.getErrorCode());
     }
@@ -138,7 +136,7 @@ public class GlobalExceptionHandler {
      * 주로 로그인 실패나 유효하지 않은 토큰 사용 시 발생합니다.
      */
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ResponseBody<Void>> handleAuthenticationException(AuthenticationException e) {
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.UNAUTHORIZED, e.getMessage());
     }
@@ -148,7 +146,7 @@ public class GlobalExceptionHandler {
      * 주로 인증된 사용자가 특정 리소스에 접근할 권한이 없을 때 발생합니다.
      */
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ResponseBody<Void>> handleAccessDeniedException(AccessDeniedException e) {
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
         logError(e);
         return buildErrorResponse(ErrorCode.FORBIDDEN, e.getMessage());
     }
@@ -160,18 +158,18 @@ public class GlobalExceptionHandler {
      * 예상치 못한 서버 오류 등이 여기서 처리됩니다.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseBody<Void>> handleException(Exception e) {
+    public ResponseEntity<ErrorResponse> handleException(Exception e) {
         logError(e);
-        return buildErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR);
+        return buildErrorResponse(ErrorCode.INTERNAL_SERVER_ERROR, e.getMessage());
     }
 
-    private ResponseEntity<ResponseBody<Void>> buildErrorResponse(ErrorCode errorCode) {
+    private ResponseEntity<ErrorResponse> buildErrorResponse(ErrorCode errorCode) {
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ResponseUtil.createFailureResponse(errorCode));
+                .body(new ErrorResponse(errorCode));
     }
 
-    private ResponseEntity<ResponseBody<Void>> buildErrorResponse(ErrorCode errorCode, String message) {
+    private ResponseEntity<ErrorResponse> buildErrorResponse(ErrorCode errorCode, String message) {
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ResponseUtil.createFailureResponse(errorCode, message));
+                .body(new ErrorResponse(errorCode, message));
     }
 }
