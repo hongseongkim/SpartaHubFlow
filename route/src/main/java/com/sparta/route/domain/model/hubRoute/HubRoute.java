@@ -1,6 +1,5 @@
-package com.sparta.route.domain.model;
+package com.sparta.route.domain.model.hubRoute;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sparta.route.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -70,22 +69,28 @@ public class HubRoute {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-    public static HubRoute create(UUID originHubId, UUID destinationHubId) {
-        return new HubRoute(null, originHubId, destinationHubId);
+    public static HubRoute create(UUID originHubId, UUID destinationHubId, Integer estimatedTime, String routeDisplayName) {
+        return new HubRoute(null, originHubId, destinationHubId, estimatedTime, routeDisplayName);
     }
 
-    private HubRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId) {
+    private HubRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId, Integer estimatedTime, String routeDisplayName) {
         this.hubRouteId = hubRouteId;
         this.originHubId = originHubId;
         this.destinationHubId = destinationHubId;
-    }
-
-    public void updateEstimatedTime(Integer estimatedTime) {
         this.estimatedTime = estimatedTime;
+        this.routeDisplayName = routeDisplayName;
     }
 
-    public void updateRouteDisplayName(String routeDisplayName) {
-        this.routeDisplayName = routeDisplayName;
+    public void updateHubRoute (UUID destinationHubId, Integer estimatedTime, String routeDisplayName) {
+        if (destinationHubId != null) {
+            this.destinationHubId = destinationHubId;
+        }
+        if (estimatedTime != null) {
+            this.estimatedTime = estimatedTime;
+        }
+        if (routeDisplayName != null && !routeDisplayName.isEmpty()) {
+            this.routeDisplayName = routeDisplayName;
+        }
     }
 
     public void softDelete() {
