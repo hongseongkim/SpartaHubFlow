@@ -1,4 +1,4 @@
-package com.sparta.route.domain.model.enums;
+package com.sparta.route.domain.model.deliveryRoute.enums;
 
 public enum DeliveryRouteStatus {
     WAITING_FOR_HUB_TRANSFER("허브 이동 대기중"),

@@ -1,8 +1,8 @@
-package com.sparta.route.domain.controller;
+package com.sparta.route.domain.controller.deliveryRoute;
 
-import com.sparta.route.domain.dto.DeliveryRouteDto;
-import com.sparta.route.domain.model.enums.DeliveryRouteStatus;
-import com.sparta.route.domain.service.DeliveryRouteService;
+import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteDto;
+import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryRouteStatus;
+import com.sparta.route.domain.service.deliveryRoute.DeliveryRouteService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

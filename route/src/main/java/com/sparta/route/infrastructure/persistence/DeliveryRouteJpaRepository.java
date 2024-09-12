@@ -1,6 +1,6 @@
 package com.sparta.route.infrastructure.persistence;
 
-import com.sparta.route.domain.model.DeliveryRoute;
+import com.sparta.route.domain.model.deliveryRoute.DeliveryRoute;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

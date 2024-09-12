@@ -1,6 +1,6 @@
 package com.sparta.route.infrastructure.configuration.auditing.listener;
 
-import com.sparta.route.domain.model.HubRoute;
+import com.sparta.route.domain.model.hubRoute.HubRoute;
 import jakarta.persistence.PreUpdate;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;

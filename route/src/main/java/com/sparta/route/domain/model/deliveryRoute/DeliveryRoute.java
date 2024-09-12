@@ -1,6 +1,6 @@
-package com.sparta.route.domain.model;
+package com.sparta.route.domain.model.deliveryRoute;
 
-import com.sparta.route.domain.model.enums.DeliveryRouteStatus;
+import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryRouteStatus;
 import com.sparta.route.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
