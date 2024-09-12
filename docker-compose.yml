@@ -1,0 +1,70 @@
+services:
+  database:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: spartahubflow
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d user"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  eureka:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - FILE_DIRECTORY=./eureka-server
+    ports:
+      - "8761:8761"
+
+  gateway:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - FILE_DIRECTORY=./gateway
+    ports:
+      - "8080:8080"
+
+  product:
+    environment:
+      AI_SECRET_KEY: ${AI_SECRET_KEY}
+    build:
+      dockerfile: Dockerfile
+      args:
+        - FILE_DIRECTORY=./product
+    depends_on:
+      database:
+        condition: service_healthy
+
+    # 5번 -> 5번
+    ports:
+      - "5:5"
+
+  order:
+    environment:
+      AI_SECRET_KEY: ${AI_SECRET_KEY}
+    build:
+      dockerfile: Dockerfile
+      args:
+        - FILE_DIRECTORY=./order
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "4:4"
+
+  company:
+    environment:
+      AI_SECRET_KEY: ${AI_SECRET_KEY}
+    build:
+      dockerfile: Dockerfile
+      args:
+        - FILE_DIRECTORY=./company
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "88:88"
