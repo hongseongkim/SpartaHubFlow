@@ -1,6 +1,6 @@
 package com.sparta.route.domain.model.deliveryRoute;
 
-import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryRouteStatus;
+import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryStatus;
 import com.sparta.route.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -34,7 +34,7 @@ public class DeliveryRoute {
     private Integer estimatedTime;
     private Double actualDistance;
     private Integer actualTime;
-    private DeliveryRouteStatus currentStatus;
+    private DeliveryStatus currentStatus;
     private Boolean isDeleted = false;
 
     public static DeliveryRoute create(UUID deliveryId, UUID originHubId, UUID destinationHubId) {

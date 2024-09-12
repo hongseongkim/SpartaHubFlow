@@ -1,7 +1,7 @@
 package com.sparta.route.domain.controller.deliveryRoute;
 
 import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteDto;
-import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryRouteStatus;
+import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryStatus;
 import com.sparta.route.domain.service.deliveryRoute.DeliveryRouteService;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +37,7 @@ public class DeliveryRouteController {
     }
 
     @PutMapping("/{routeId}/status")
-    public ResponseEntity<Void> updateRouteStatus(@PathVariable UUID routeId, @RequestBody DeliveryRouteStatus newStatus) {
+    public ResponseEntity<Void> updateRouteStatus(@PathVariable UUID routeId, @RequestBody DeliveryStatus newStatus) {
         deliveryRouteService.updateRouteStatus(routeId, newStatus);
         return ResponseEntity.ok().build();
     }

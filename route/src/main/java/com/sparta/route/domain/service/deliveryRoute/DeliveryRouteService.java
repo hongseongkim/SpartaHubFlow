@@ -2,7 +2,7 @@ package com.sparta.route.domain.service.deliveryRoute;
 
 import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteDto;
 import com.sparta.route.domain.model.deliveryRoute.DeliveryRoute;
-import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryRouteStatus;
+import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryStatus;
 import com.sparta.route.infrastructure.persistence.DeliveryRouteJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
@@ -24,7 +24,7 @@ public class DeliveryRouteService {
                 .map(dto -> {
                     DeliveryRoute route = DeliveryRouteDto.toEntity(dto);
                     route.setDeliveryId(deliveryId);
-                    route.setCurrentStatus(DeliveryRouteStatus.WAITING_FOR_HUB_TRANSFER);
+                    route.setCurrentStatus(DeliveryStatus.WAITING_FOR_HUB_TRANSFER);
                     return route;
                 })
                 .collect(Collectors.toList());
@@ -40,7 +40,7 @@ public class DeliveryRouteService {
     }
 
     @Transactional
-    public void updateRouteStatus(UUID routeId, DeliveryRouteStatus newStatus) {
+    public void updateRouteStatus(UUID routeId, DeliveryStatus newStatus) {
         DeliveryRoute route = deliveryRouteJpaRepository.findById(routeId)
                 .orElseThrow(() -> new EntityNotFoundException("DeliveryRoute not found"));
         route.setCurrentStatus(newStatus);
