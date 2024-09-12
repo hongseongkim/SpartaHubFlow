@@ -26,8 +26,8 @@ spring:
 
 
 server:
-  port: 1
-#eureka:
-#  client:
-#    service-url:
-#      defaultZone: http://localhost:19090/eureka/
+  port: 88
+
+ai:
+  secret:
+    key: ${AI_SECRET_KEY}
