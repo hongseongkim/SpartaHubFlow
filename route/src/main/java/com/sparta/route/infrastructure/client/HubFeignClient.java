@@ -1,6 +1,6 @@
 package com.sparta.route.infrastructure.client;
 
-import com.sparta.route.domain.dto.HubResponseDto;
+import com.sparta.route.domain.dto.hub.HubResponseDto;
 import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
