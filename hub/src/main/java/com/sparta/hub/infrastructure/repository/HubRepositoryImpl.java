@@ -4,8 +4,8 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.hub.domain.model.Hub;
-import com.sparta.hub.domain.model.QHub;
 
+import com.sparta.hub.domain.model.QHub;
 import com.sparta.hub.domain.repository.HubCustomRepository;
 import java.util.ArrayList;
 import java.util.List;
