@@ -12,10 +12,9 @@ import lombok.Getter;
 @Getter
 @Builder(access = AccessLevel.PRIVATE)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 public class HubResponseDto {
 
-    private UUID id;
+    private UUID hubId;
     private String name;
     private String address;
     private Double latitude;
@@ -28,7 +27,7 @@ public class HubResponseDto {
 
     public static HubResponseDto fromEntity(Hub hub) {
         return HubResponseDto.builder()
-                .id(hub.getHubId())
+                .hubId(hub.getHubId())
                 .name(hub.getName())
                 .address(hub.getAddress())
                 .latitude(hub.getLatitude())
