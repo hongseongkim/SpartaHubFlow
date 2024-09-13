@@ -16,6 +16,10 @@ public interface OrderDto {
         private final UUID productId;
         private final Integer quantity;
         private final OrderStatusEnum orderStatus;
+        private final UUID departureCompanyId;
+        private final UUID destinationCompanyId;
+        private final Long receiverId;
+        private final String deliveryAddress;
     }
 
     @Data
