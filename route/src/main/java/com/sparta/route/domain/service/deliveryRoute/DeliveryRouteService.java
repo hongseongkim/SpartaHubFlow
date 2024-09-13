@@ -1,8 +1,8 @@
-package com.sparta.route.domain.service;
+package com.sparta.route.domain.service.deliveryRoute;
 
-import com.sparta.route.domain.dto.DeliveryRouteDto;
-import com.sparta.route.domain.model.DeliveryRoute;
-import com.sparta.route.domain.model.enums.DeliveryRouteStatus;
+import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteDto;
+import com.sparta.route.domain.model.deliveryRoute.DeliveryRoute;
+import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryRouteStatus;
 import com.sparta.route.infrastructure.persistence.DeliveryRouteJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;

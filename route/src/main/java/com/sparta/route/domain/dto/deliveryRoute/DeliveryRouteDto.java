@@ -1,7 +1,7 @@
-package com.sparta.route.domain.dto;
+package com.sparta.route.domain.dto.deliveryRoute;
 
-import com.sparta.route.domain.model.DeliveryRoute;
-import com.sparta.route.domain.model.enums.DeliveryRouteStatus;
+import com.sparta.route.domain.model.deliveryRoute.DeliveryRoute;
+import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryStatus;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,7 +17,7 @@ public class DeliveryRouteDto {
     private Integer sequence;
     private Double estimatedDistance;
     private Integer estimatedTime;
-    private DeliveryRouteStatus currentStatus;
+    private DeliveryStatus currentStatus;
 
     public static DeliveryRouteDto from(DeliveryRoute route) {
         return DeliveryRouteDto.builder()

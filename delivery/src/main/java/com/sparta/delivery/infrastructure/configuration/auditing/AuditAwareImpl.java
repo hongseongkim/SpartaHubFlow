@@ -1,24 +1,18 @@
-package com.sparta.route.infrastructure.configuration.auditing.listener;
+package com.sparta.delivery.infrastructure.configuration.auditing;
 
-import com.sparta.route.domain.model.hubRoute.HubRoute;
-import jakarta.persistence.PreUpdate;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
-import org.springframework.stereotype.Component;
+import org.springframework.data.domain.AuditorAware;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-@Component
-public class SoftDeleteListener {
-    @PreUpdate
-    public void preUpdate(Object object) {
-        if (object instanceof HubRoute hub && (hub.getDeletedAt() != null && hub.getDeletedBy() == null)) {
-            hub.setDeletedBy(getCurrentAuditor().orElse("Unknown User"));
-        }
-    }
+public class AuditAwareImpl implements AuditorAware<String> {
+    @Override
+    @Nonnull
+    public Optional<String> getCurrentAuditor() {
 
-    private Optional<String> getCurrentAuditor() {
         // 현재 요청 정보 가져오기
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 
@@ -37,3 +31,4 @@ public class SoftDeleteListener {
         return Optional.of("Unknown User");
     }
 }
+

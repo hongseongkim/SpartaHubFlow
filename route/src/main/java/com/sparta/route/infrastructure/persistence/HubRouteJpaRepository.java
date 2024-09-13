@@ -1,6 +1,6 @@
 package com.sparta.route.infrastructure.persistence;
 
-import com.sparta.route.domain.model.HubRoute;
+import com.sparta.route.domain.model.hubRoute.HubRoute;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,7 +13,6 @@ public interface HubRouteJpaRepository extends JpaRepository<HubRoute, UUID> {
 
     List<HubRoute> findByOriginHubIdAndIsDeletedFalse(UUID originHubId);
 
-    // 추가적인 쿼리 메서드
     List<HubRoute> findByDestinationHubIdAndIsDeletedFalse(UUID destinationHubId);
 
     boolean existsByOriginHubIdAndDestinationHubIdAndIsDeletedFalse(UUID originHubId, UUID destinationHubId);

@@ -1,4 +1,4 @@
-package com.sparta.route.infrastructure.configuration.cache;
+package com.sparta.delivery.infrastructure.configuration.cache;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
