@@ -67,15 +67,22 @@ public class SecurityConfig {
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/api/v1/user/signUp").permitAll()
                         .pathMatchers("/api/v1/user/signIn").permitAll()
-                        .pathMatchers("/api/v1/user").authenticated()
-                        .pathMatchers(HttpMethod.GET, "/api/v1/user/admin").hasRole("MASTER")
+                        .pathMatchers("/swagger-ui/**").permitAll()
+                        .pathMatchers("/api/v1/user/docs").permitAll()
+                        .pathMatchers(HttpMethod.GET, "/api/v1/user/admin","/api/v1/user/search").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.DELETE, "/api/v1/user/admin").hasRole("MASTER")
+                        .pathMatchers("/api/v1/user/**").authenticated()
 
                         .pathMatchers("/api/v1/user/**").hasRole("MASTER")
+
+
                         .pathMatchers(HttpMethod.GET, "/api/v1/hubs/**").permitAll()
                         .pathMatchers("/api/v1/hubs/**").hasRole("MASTER")
 
+
                         .pathMatchers("/api/v1/products/**").hasRole("MASTER")
                         .pathMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+
 
                         .anyExchange().authenticated())
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)

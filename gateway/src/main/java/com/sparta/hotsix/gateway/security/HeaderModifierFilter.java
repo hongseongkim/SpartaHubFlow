@@ -18,7 +18,12 @@ public class HeaderModifierFilter implements GlobalFilter  {
     private String secretKey;
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 특정 요청 경로 및 메서드에 대해서만 헤더 추가
+        String path = exchange.getRequest().getURI().getPath();
+
+        // 필터를 적용하지 않을 경로를 체크
+        if ("/api/v1/user/signUp".equals(path) || "/api/v1/user/signIn".equals(path)) {
+            return chain.filter(exchange); // 필터를 적용하지 않고 다음 필터로 넘김
+        }
 
             String token = extractToken(exchange);
             if (token != null) {

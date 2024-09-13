@@ -10,12 +10,16 @@ import com.sparta.hotsix.user.dto.SignUpRequest;
 import com.sparta.hotsix.user.repository.UserQueryRepository;
 import com.sparta.hotsix.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -27,13 +31,6 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserQueryRepository userQueryRepository;
 
-    // 이메일로 유저 찾기 (중복된 예외 처리 메서드로 분리)
-
-
-    public User findUserByEmail(String email) {
-        return findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("이메일을 찾을 수 없습니다."));
-    }
 
     // 유저 ID로 유저 찾기 (중복된 예외 처리 메서드로 분리)
     private User findUserById(Long id) {
@@ -46,15 +43,23 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByEmail(email);
     }
 
+    // 이메일로 유저 찾기 (중복된 예외 처리 메서드로 분리)
+
+
+    public User findUserByEmail(String email) {
+        return findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("이메일을 찾을 수 없습니다."));
+    }
     // 회원가입 처리
     @Transactional
-    public UserResponse signUp(SignUpRequest request) {
+    public UserResponse signUp(SignUpRequest signUpRequest ) {
 
-        if (findByEmail(request.getEmail()).isPresent()) {
+
+        if (findByEmail(signUpRequest.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
-        User user = new User(request, passwordEncoder.encode(request.getPassword()));
+        User user = new User(signUpRequest, passwordEncoder.encode(signUpRequest.getPassword()));
         userRepository.save(user);
 
         return convertToUserResponse(user);
@@ -79,12 +84,14 @@ public class UserServiceImpl implements UserService {
 
     // 모든 유저 정보 가져오기
     @Override
+    @Cacheable(cacheNames = "userAllCache", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<UserResponse> getAllUsers(Pageable pageable) {
         Page<User> usersPage = userQueryRepository.findAll(pageable);
         return usersPage.map(this::convertToUserResponse);
     }
 
     // 특정 유저 정보 가져오기
+    @Cacheable(cacheNames = "userCache", key = "args[0]")
     public UserResponse getUser(String userEmail) {
         User user = findUserByEmail(userEmail);
         return convertToUserResponse(user);
@@ -93,7 +100,9 @@ public class UserServiceImpl implements UserService {
     // 유저 정보 업데이트
     @Override
     @Transactional
-    public void updateUser(String userEmail, UserUpdateRequest request) {
+    @CachePut(cacheNames = "userCache" ,  key = "args[0]")
+    @CacheEvict(cacheNames = "userAllCache", allEntries = true)
+    public UserResponse updateUser(String userEmail, UserUpdateRequest request) {
         User user = findUserByEmail(userEmail);
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -102,37 +111,46 @@ public class UserServiceImpl implements UserService {
 
         user.update(request, passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+        return convertToUserResponse(user);
+
     }
+
+
 
     // 유저 소프트 삭제
     @Override
     @Transactional
-    public boolean softDelete(Long id) {
+    @CacheEvict(cacheNames = {"userCache", "userAllCache"}, allEntries = true)
+    public UserResponse softDelete(Long id) {
         User user = findUserById(id);
         user.softDelete();
         userRepository.save(user);
-        return true;
+        return convertToUserResponse(user);
     }
 
     // 관리자 권한으로 유저 소프트 삭제
     @Override
     @Transactional
-    public boolean softDelete(Long id, String userRole) {
+    @CachePut(cacheNames = "userCache", key = "#result.email")
+    @CacheEvict(cacheNames = "userAllCache", allEntries = true)
+    public UserResponse softDelete(Long id, Long adminId) {
         User user = findUserById(id);
+        User admin = findUserById(adminId);
 
-        if (UserRole.MASTER.name().equals(userRole)) {
-            user.softDelete(userRole);
+        if (Objects.equals(admin.getRole(), "MASTER")) {
+            user.softDelete(admin.getUsername());
             userRepository.save(user);
-            return true;
+            return convertToUserResponse(user);
         } else {
             throw new IllegalArgumentException("MASTER 권한 없음");
         }
     }
 
+
     // 엔티티 -> DTO 변환 메서드 (private 접근 제한자 사용)
-    protected UserResponse convertToUserResponse(User user) {
+    private UserResponse convertToUserResponse(User user) {
         return new UserResponse(
-                user.getId(),
+
                 user.getUsername(),
                 user.getNickname(),
                 user.getEmail(),

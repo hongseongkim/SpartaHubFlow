@@ -8,18 +8,17 @@ import com.sparta.hotsix.user.dto.UserUpdateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 
 public interface UserService {
 
-    UserResponse signUp (SignUpRequest request);
-    String signIn(SignInRequest request);
+    UserResponse signUp (SignUpRequest signUpRequest);
+    String signIn(SignInRequest signInRequest);
     User findUserByEmail(String userEmail);
     UserResponse getUser(String userEmail);
     Page<UserResponse> getAllUsers(Pageable pageable);
-    void updateUser(String userEmail, UserUpdateRequest userUpdateRequest);
-    boolean softDelete(Long id);
-    boolean softDelete(Long id,String userRole);
+    UserResponse updateUser(String userEmail, UserUpdateRequest userUpdateRequest);
+    UserResponse softDelete(Long id);
+    UserResponse softDelete(Long id,Long adminId);
 
     Page<UserResponse> getUserSearch(Pageable modifiedPageable ,String username);
 }

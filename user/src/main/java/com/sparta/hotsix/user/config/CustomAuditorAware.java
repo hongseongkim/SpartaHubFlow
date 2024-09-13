@@ -9,23 +9,28 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.Optional;
 
-@Component
 public class CustomAuditorAware implements AuditorAware<Long> {
 
     @Override
     public Optional<Long> getCurrentAuditor() {
-        // 현재 요청 정보를 가져옴
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
 
         if (requestAttributes instanceof ServletRequestAttributes servletRequestAttributes) {
             HttpServletRequest request = servletRequestAttributes.getRequest();
+            String userIdHeader = request.getHeader("User-Id");
 
-            Long userId = Long.valueOf(request.getHeader("User-Id"));
-
-
-            return Optional.of(userId);
+            if (userIdHeader != null) {
+                try {
+                    Long userId = Long.valueOf(userIdHeader);
+                    return Optional.of(userId);
+                } catch (NumberFormatException e) {
+                    // 헤더가 있지만 숫자로 변환할 수 없는 경우
+                    return Optional.empty();
+                }
+            }
         }
 
+        // 헤더가 없거나 요청이 잘못된 경우
         return Optional.empty();
     }
 }

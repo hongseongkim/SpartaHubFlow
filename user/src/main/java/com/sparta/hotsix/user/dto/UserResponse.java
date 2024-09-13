@@ -21,8 +21,6 @@ public class UserResponse {
 
     private String role;
 
-    private String password;
-
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
@@ -33,19 +31,18 @@ public class UserResponse {
 
     private String deletedBy;
 
-    public UserResponse(Long id, String username, String nickname, String email, String role, boolean deleted, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt , String deletedBy) {
+    private Boolean isDeleted;
 
-        this.id = id;
+    public UserResponse(String username, String nickname, String email, String role, boolean deleted, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt, String deletedBy) {
+
         this.username = username;
         this.nickname = nickname;
         this.email = email;
         this.role = role;
+        this.isDeleted = deleted;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.deletedAt = deletedAt;
         this.deletedBy = deletedBy;
-
-
-
     }
 }

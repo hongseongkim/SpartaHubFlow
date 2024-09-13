@@ -31,7 +31,6 @@ public class User extends BaseEntity {
     @Column(name = "password")
     private String password;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 20)
     private UserRole role;
 
@@ -46,7 +45,7 @@ public class User extends BaseEntity {
         this.nickname = request.getNickname();
         this.email = request.getEmail();
         this.password = encodedPassword;
-        this.role = UserRole.CUSTOMER;
+        this.role = UserRole.valueOf(request.getRole());
     }
 
     public void update(UserUpdateRequest request , String encodedPassword) {
@@ -60,9 +59,9 @@ public class User extends BaseEntity {
 
 
 
-    public void softDelete(String role) {
+    public void softDelete(String adminUsername) {
         this.isDeleted = true;
-            setDelete(LocalDateTime.now(), role);
+            setDelete(LocalDateTime.now(), "ADMIN : " + adminUsername);
     }
 
 

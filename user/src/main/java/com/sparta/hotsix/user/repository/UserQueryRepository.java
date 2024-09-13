@@ -3,7 +3,6 @@ package com.sparta.hotsix.user.repository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.sparta.hotsix.user.domain.QUser;
 import com.sparta.hotsix.user.domain.User;
-import com.sparta.hotsix.user.dto.UserResponse;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -31,14 +30,13 @@ public class UserQueryRepository {
                 .where(user.isDeleted.isTrue())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(user.createdAt.desc(),user.username.asc())
+                .orderBy(user.createdAt.desc(), user.username.asc())
                 .fetch();
 
 
         long total = query.selectFrom(user)
                 .where(user.isDeleted.isTrue())
                 .fetch().size();
-
 
 
         // Page<UserResponse> 객체를 생성하여 반환합니다.
@@ -47,14 +45,14 @@ public class UserQueryRepository {
 
     }
 
-    public Page<User> getUserSearch(Pageable pageable,String username) {
+    public Page<User> getUserSearch(Pageable pageable, String username) {
 
         QUser user = QUser.user;
         List<User> users = query.selectFrom(user)
-                .where(user.isDeleted.isTrue(),user.username.contains(username))
+                .where(user.isDeleted.isTrue(), user.username.contains(username))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(user.createdAt.desc(),user.username.asc())
+                .orderBy(user.createdAt.desc(), user.username.asc())
                 .fetch();
 
 
@@ -63,12 +61,8 @@ public class UserQueryRepository {
                 .fetch().size();
 
 
-
         // Page<UserResponse> 객체를 생성하여 반환합니다.
         return new PageImpl<>(users, pageable, total);
-
-
-
 
 
     }
