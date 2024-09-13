@@ -2,8 +2,10 @@ package com.sparta.company.service;
 
 import com.sparta.company.client.HubClient;
 import com.sparta.company.domain.dto.CompanyDto;
+import com.sparta.company.domain.dto.HubDto;
 import com.sparta.company.domain.entity.Company;
 import com.sparta.company.repository.CompanyRepository;
+import jakarta.ws.rs.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -24,10 +27,17 @@ public class CompanyService {
     private final HubClient hubClient;
 
     @Transactional
-    public CompanyDto.Response createCompany(CompanyDto.Create companyDto) {
+    public CompanyDto.Response createCompany(Long userId, String userRole, CompanyDto.Create companyDto) {
 
-        if(hubClient.getHubById(companyDto.getHubId()) == null){
+        HubDto.Response hubDto = hubClient.getHubById(companyDto.getHubId());
+
+        if (hubDto == null) {
             throw new IllegalArgumentException("존재하지 않는 허브입니다.");
+        }
+
+        // 허브 관리자는 자신의 허브에 소속된 업체만 생성 가능
+        if (Objects.equals(userRole, "HUB_MANAGER") && !Objects.equals(hubDto.getHubManagerId(), userId)) {
+            throw new ForbiddenException("자신의 허브에 소속된 업체만 생성할 수 있습니다.");
         }
 
         return CompanyDto.Response.of(companyRepository.save(new Company(
@@ -44,7 +54,7 @@ public class CompanyService {
 
         Company company = companyRepository.findByIdNotDeleted(companyId);
 
-        if(company == null){
+        if (company == null) {
             throw new IllegalArgumentException("존재하지 않는 업체입니다.");
         }
 
@@ -75,17 +85,25 @@ public class CompanyService {
         Page<Company> companyList = companyRepository.findAllByCompanyNameContainingAndIsDeletedFalse(companyName, pageable);
 
         return companyList.map(CompanyDto.GetAllCompanysResponse::new).stream().toList();
-        
+
     }
 
     @Transactional
-    public CompanyDto.Response modifyCompany(UUID companyId, CompanyDto.Modify companyDto) {
+    public CompanyDto.Response modifyCompany(Long userId, String userRole, UUID companyId, CompanyDto.Modify companyDto) {
 
         Company company = companyRepository.findByIdNotDeleted(companyId);
 
-        if(company == null) {
+        if (company == null) {
             throw new IllegalArgumentException("존재하지 않는 업체입니다.");
         }
+
+        HubDto.Response hubDto = hubClient.getHubById(companyDto.getHubId());
+
+        // 허브 관리자는 자신의 허브에 소속된 업체만 수정 가능
+        if (Objects.equals(userRole, "HUB_MANAGER") && !Objects.equals(hubDto.getHubManagerId(), userId)) {
+            throw new ForbiddenException("자신의 허브에 소속된 업체만 수정할 수 있습니다.");
+        }
+
 
         company.modify(
                 companyDto.getCompanyName(),
@@ -94,21 +112,35 @@ public class CompanyService {
                 companyDto.getCompanyAddress());
 
         return CompanyDto.Response.of(companyRepository.save(company));
-        
+
     }
 
     @Transactional
-    public CompanyDto.DeleteResponse deleteCompany(UUID companyId, CompanyDto.Delete companyDto) {
+    public CompanyDto.DeleteResponse deleteCompany(Long userId, String userRole, UUID companyId) {
 
-        if(companyRepository.findByIdNotDeleted(companyId) == null){
+        Company company = companyRepository.findByIdNotDeleted(companyId);
+
+        if (company == null) {
             throw new IllegalArgumentException("존재하지 않는 업체입니다.");
         }
 
-        companyRepository.deleteCompanyById(companyId, LocalDateTime.now(), companyDto.getUserIdToDelete());
+        // 업체 관리자는 자신의 업체만 삭제 가능
+        if (Objects.equals(userRole, "COMPANY_MANAGER") && !Objects.equals(company.getCompanyMangerId(), userId)) {
+            throw new ForbiddenException("자신의 허브에 소속된 업체만 삭제할 수 있습니다.");
+        }
+
+        HubDto.Response hubDto = hubClient.getHubById(company.getHubId());
+
+        // 허브 관리자는 자신의 허브에 소속된 업체만 삭제 가능
+        if (Objects.equals(userRole, "HUB_MANAGER") && !Objects.equals(hubDto.getHubManagerId(), userId)) {
+            throw new ForbiddenException("자신의 허브에 소속된 업체만 삭제할 수 있습니다.");
+        }
+
+        companyRepository.deleteCompanyById(companyId, LocalDateTime.now(), userId);
 
         return CompanyDto.DeleteResponse.builder()
                 .companyId(companyId)
                 .build();
-        
+
     }
 }
