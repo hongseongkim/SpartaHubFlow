@@ -18,8 +18,12 @@ public class HeaderModifierFilter implements GlobalFilter  {
     private String secretKey;
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 특정 요청 경로 및 메서드에 대해서만 헤더 추가
-        if (shouldAddHeader(exchange)) {
+        String path = exchange.getRequest().getURI().getPath();
+
+        // 필터를 적용하지 않을 경로를 체크
+        if ("/api/v1/user/signUp".equals(path) || "/api/v1/user/signIn".equals(path)) {
+            return chain.filter(exchange); // 필터를 적용하지 않고 다음 필터로 넘김
+        }
 
             String token = extractToken(exchange);
             if (token != null) {
@@ -48,21 +52,12 @@ public class HeaderModifierFilter implements GlobalFilter  {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
-        }
 
         return chain.filter(exchange);
     }
 
 
 
-
-    private boolean shouldAddHeader(ServerWebExchange exchange) {
-        // 조건에 따라 헤더를 추가할 요청 경로와 메서드를 필터링
-        HttpMethod method = exchange.getRequest().getMethod();
-        // GET 메서드인 경우에만 헤더를 추가
-        return method.matches("GET");
-
-    }
 
     private String extractToken(ServerWebExchange exchange) {
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
