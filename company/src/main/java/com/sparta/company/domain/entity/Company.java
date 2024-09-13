@@ -37,6 +37,9 @@ public class Company extends Timestamped {
     @Column(name = "company_address")
     private String companyAddress;
 
+    @Column(name = "company_manger_id")
+    private Long companyMangerId;
+
     public Company(String companyName, UUID hubId, CompanyTypeEnum companyType, String companyAddress) {
         this.companyName = companyName;
         this.hubId = hubId;
