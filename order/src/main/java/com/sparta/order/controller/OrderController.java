@@ -19,7 +19,7 @@ public class OrderController {
 
     @PostMapping
     @Operation(summary = "주문 생성", description = "주문을 생성합니다.")
-    public OrderDto.Response createOrder(@RequestBody OrderDto.Response orderDto) {
+    public OrderDto.Response createOrder(@RequestBody OrderDto.Create orderDto) {
         return orderService.createOrder(orderDto);
     }
 

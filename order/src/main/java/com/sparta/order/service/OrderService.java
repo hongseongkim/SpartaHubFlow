@@ -1,6 +1,10 @@
 package com.sparta.order.service;
 
+import com.sparta.order.client.CompanyClient;
+import com.sparta.order.client.DeliveryClient;
 import com.sparta.order.client.ProductClient;
+import com.sparta.order.domain.dto.CompanyDto;
+import com.sparta.order.domain.dto.DeliveryDto;
 import com.sparta.order.domain.dto.OrderDto;
 import com.sparta.order.domain.dto.ProductDto;
 import com.sparta.order.domain.entity.Order;
@@ -24,9 +28,11 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductClient productClient;
+    private final CompanyClient companyClient;
+    private final DeliveryClient deliveryClient;
 
     @Transactional
-    public OrderDto.Response createOrder(OrderDto.Response orderDto) {
+    public OrderDto.Response createOrder(OrderDto.Create orderDto) {
 
         ProductDto.Response productDto = productClient.getProductById(orderDto.getProductId());
 
@@ -38,24 +44,48 @@ public class OrderService {
             throw new RuntimeException("재고가 충분하지 않습니다.");
         }
 
+        CompanyDto.Response DepartureCompanyDto = companyClient.getCompany(orderDto.getDepartureCompanyId());
+        CompanyDto.Response DestinationCompanyDto = companyClient.getCompany(orderDto.getDestinationCompanyId());
+
+        if(DepartureCompanyDto == null || DestinationCompanyDto == null){
+            throw new IllegalArgumentException("존재하지 않는 업체입니다.");
+        }
+
+        UUID departureHubId = DepartureCompanyDto.getHubId();
+        UUID destinationHubId = DestinationCompanyDto.getHubId();
+
+        // 주문 생성
+        Order order = orderRepository.save(new Order(
+                orderDto.getProductId(),
+                orderDto.getQuantity(),
+                orderDto.getOrderStatus()
+        ));
+
+        // 배송 생성
+        deliveryClient.createDelivery(DeliveryDto.Create.builder()
+                        .orderId(order.getOrderId())
+                        .departureHubId(departureHubId)
+                        .destinationHubId(destinationHubId)
+                        .deliveryAddress(orderDto.getDeliveryAddress())
+                        .receiverId(orderDto.getReceiverId())
+                        .build()
+        );
+
         // 주문 생성 시 재고 감소
-        if(orderDto.getOrderStatus() == OrderStatusEnum.DELIVERING){
+        if(order.getOrderStatus() == OrderStatusEnum.DELIVERING){
             productClient.modifyProduct(productDto.getProductId(),
                     ProductDto.Modify.builder()
                             .productName(productDto.getProductName())
                             .description(productDto.getDescription())
-                            .stock(productDto.getStock() - orderDto.getQuantity())
+                            .stock(productDto.getStock() - order.getQuantity())
                             .hubId(productDto.getHubId())
                             .companyId(productDto.getCompanyId())
                             .build()
             );
         }
 
-        return OrderDto.Response.of(orderRepository.save(new Order(
-                orderDto.getProductId(),
-                orderDto.getQuantity(),
-                orderDto.getOrderStatus()
-        )));
+
+        return OrderDto.Response.of(order);
     }
 
     @Transactional(readOnly = true)
