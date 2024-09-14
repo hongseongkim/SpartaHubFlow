@@ -33,4 +33,12 @@ public class BaseEntity {
 
     @Column(name = "deleted_by", length = 100)
     private String deletedBy;
+
+
+
+    protected void setDelete(LocalDateTime deletedAt ,String username) {
+        this.deletedAt = deletedAt;
+        this.deletedBy = username;
+    }
+
 }

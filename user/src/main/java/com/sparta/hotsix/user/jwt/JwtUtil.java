@@ -31,7 +31,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .id(user.getId().toString())
                 .subject(user.getEmail())
-                .claim("role", user.getRole().toString()) // 수정된 부분
+                .claim("role", user.getRole())
                 .issuer(appName)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationMs))

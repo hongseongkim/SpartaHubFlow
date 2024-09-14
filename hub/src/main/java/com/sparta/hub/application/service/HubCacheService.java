@@ -42,4 +42,6 @@ public class HubCacheService {
         Page<Hub> allHubs = hubRepository.findAllByIsDeletedFalse(pageable);
         return allHubs.getContent();
     }
+
+
 }
