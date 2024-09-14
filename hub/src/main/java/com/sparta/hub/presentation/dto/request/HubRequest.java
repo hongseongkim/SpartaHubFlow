@@ -5,11 +5,12 @@ import lombok.Getter;
 
 @Getter
 public class HubRequest {
+
     private String name;
     private String address;
 
     public HubDto toDTO() {
-        return HubDto.create(name, address);
+        return HubDto.createWithoutManager(name, address);
     }
 }
 

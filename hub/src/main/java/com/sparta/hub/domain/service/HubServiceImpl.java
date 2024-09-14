@@ -52,6 +52,7 @@ public class HubServiceImpl implements HubService {
         validateNameAndAddress(hubDto.getName(), hubDto.getAddress());
 
         Hub hub = getHubById(hubId);
+
         hub.updateName(hubDto.getName());
 
         // 주소가 변경되었는지 확인
@@ -68,6 +69,17 @@ public class HubServiceImpl implements HubService {
             validateCoordinates(latitude, longitude);
             hub.updateCoordinates(latitude, longitude);
         }
+
+        Hub updatedHub = hubRepository.save(hub);
+        return hubCacheService.cacheHub(updatedHub);
+    }
+
+    @Override
+    public Hub assignHubManager(UUID hubId, HubDto hubDto) {
+
+        Hub hub = getHubById(hubId);
+
+        hub.updateHubManager(hubDto.getHubManagerId(), hubDto.getHubManagerSlackId());
 
         Hub updatedHub = hubRepository.save(hub);
         return hubCacheService.cacheHub(updatedHub);

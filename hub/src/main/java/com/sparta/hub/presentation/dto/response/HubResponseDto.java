@@ -17,6 +17,8 @@ public class HubResponseDto {
     private UUID hubId;
     private String name;
     private String address;
+    private Long hubManagerId;
+    private String hubManagerSlackId;
     private Double latitude;
     private Double longitude;
     private boolean isDeleted;
@@ -30,6 +32,8 @@ public class HubResponseDto {
                 .hubId(hub.getHubId())
                 .name(hub.getName())
                 .address(hub.getAddress())
+                .hubManagerId(hub.getHubManagerId())
+                .hubManagerSlackId(hub.getHubManagerSlackId())
                 .latitude(hub.getLatitude())
                 .longitude(hub.getLongitude())
                 .isDeleted(hub.isDeleted())

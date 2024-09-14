@@ -1,6 +1,7 @@
 package com.sparta.hub.presentation.controller;
 
 import com.sparta.hub.application.service.AuthorizationService;
+import com.sparta.hub.presentation.dto.request.HubManagerRequest;
 import com.sparta.hub.presentation.dto.response.HubResponseDto;
 import com.sparta.hub.domain.model.Hub;
 import com.sparta.hub.domain.service.HubServiceImpl;
@@ -48,6 +49,20 @@ public class HubController {
         return ResponseEntity.status(HttpStatus.CREATED).body(HubResponseDto.fromEntity(createdHub));
     }
 
+    @PatchMapping("/{hubId}/manager")
+    @Operation(summary = "허브 매니저 할당", description = "허브에 매니저를 할당합니다.")
+    public ResponseEntity<HubResponseDto> assignHubManager(
+            @RequestHeader(value = "User-Role", required = false) String userRole,
+            @PathVariable UUID hubId,
+            @RequestBody @Valid HubManagerRequest hubManagerRequest) {
+
+        authorizationService.validateMasterRole(userRole);
+
+        Hub updatedHub = hubServiceImpl.assignHubManager(hubId, hubManagerRequest.toDTO());
+
+        return ResponseEntity.ok(HubResponseDto.fromEntity(updatedHub));
+    }
+
     @PatchMapping("/{hubId}")
     @Operation(summary = "허브 수정", description = "ID를 통해 허브 정보를 수정합니다.")
     public ResponseEntity<HubResponseDto> updateHub(
@@ -58,6 +73,7 @@ public class HubController {
         authorizationService.validateManagerRole(userRole);
 
         Hub updatedHub = hubServiceImpl.updateHub(hubId, hubRequest.toDTO());
+
         return ResponseEntity.ok(HubResponseDto.fromEntity(updatedHub));
     }
 
@@ -70,6 +86,7 @@ public class HubController {
         authorizationService.validateManagerRole(userRole);
 
         hubServiceImpl.softDeleteHub(hubId);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -77,7 +94,9 @@ public class HubController {
     @GetMapping("/{hubId}")
     @Operation(summary = "허브 조회", description = "ID를 통해 허브를 조회합니다.")
     public ResponseEntity<HubResponseDto> getHubById(@PathVariable UUID hubId) {
+
         Hub hub = hubServiceImpl.getHubById(hubId);
+
         return ResponseEntity.ok(HubResponseDto.fromEntity(hub));
     }
 
@@ -89,16 +108,19 @@ public class HubController {
         pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
 
         Page<Hub> hubs = hubServiceImpl.getAllHubs(pageable);
+
         return ResponseEntity.ok(hubs.map(HubResponseDto::fromEntity));
     }
 
     @GetMapping("/full-list")
     @Operation(summary = "전체 허브 목록 조회", description = "페이지네이션 없이 모든 허브 목록을 조회합니다.")
     public ResponseEntity<List<HubResponseDto>> getAllHubsWithoutPagination() {
+
         List<Hub> hubs = hubServiceImpl.getAllHubsWithoutPagination();
         List<HubResponseDto> hubResponseDtos = hubs.stream()
                 .map(HubResponseDto::fromEntity)
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(hubResponseDtos);
     }
 
@@ -113,6 +135,7 @@ public class HubController {
         pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
 
         Page<Hub> hubs = hubServiceImpl.searchHubsByName(name, pageable);
+
         return ResponseEntity.ok(hubs.map(HubResponseDto::fromEntity));
     }
 

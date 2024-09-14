@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface HubService {
     Hub createHub(HubDto hubDto);
     Hub updateHub(UUID hubId, HubDto hubDto);
+    Hub assignHubManager(UUID hubId, HubDto hubDto);
     void softDeleteHub(UUID hubId);
     Hub getHubById(UUID hubId);
     Page<Hub> getAllHubs(Pageable pageable);

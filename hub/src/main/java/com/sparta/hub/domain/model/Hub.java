@@ -46,6 +46,9 @@ public class Hub {
     @Column(name = "hub_manager_id")
     private Long hubManagerId;
 
+    @Column(name = "hub_manager_slack_id")
+    private String hubManagerSlackId;
+
     @Column(name = "is_deleted")
     private boolean isDeleted;
 
@@ -89,6 +92,11 @@ public class Hub {
 
     public void updateAddress(String newAddress) {
         this.address = newAddress;
+    }
+
+    public void updateHubManager(Long hubManagerId, String hubManagerSlackId) {
+        this.hubManagerId = hubManagerId;
+        this.hubManagerSlackId = hubManagerSlackId;
     }
 
     public void updateCoordinates(Double newLatitude, Double newLongitude) {
