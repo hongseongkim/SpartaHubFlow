@@ -1,8 +1,8 @@
 package com.sparta.route.domain.service.deliveryRoute;
 
 import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteDto;
+import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteRequestDto;
 import com.sparta.route.domain.model.deliveryRoute.DeliveryRoute;
-import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryStatus;
 import com.sparta.route.infrastructure.persistence.DeliveryRouteJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
@@ -19,14 +19,12 @@ public class DeliveryRouteService {
     private final DeliveryRouteJpaRepository deliveryRouteJpaRepository;
 
     @Transactional
-    public void createDeliveryRoute(UUID deliveryId, List<DeliveryRouteDto> routeDtos) {
+    public void createDeliveryRoute(UUID deliveryId, List<DeliveryRouteRequestDto> routeDtos) {
         List<DeliveryRoute> routes = routeDtos.stream()
-                .map(dto -> {
-                    DeliveryRoute route = DeliveryRouteDto.toEntity(dto);
-                    route.setDeliveryId(deliveryId);
-                    route.setCurrentStatus(DeliveryStatus.WAITING_FOR_HUB_TRANSFER);
-                    return route;
-                })
+                .map(DeliveryRouteRequestDto::toDTO)
+                .map(DeliveryRouteDto::toEntity)
+
+
                 .collect(Collectors.toList());
 
         deliveryRouteJpaRepository.saveAll(routes);
@@ -40,10 +38,15 @@ public class DeliveryRouteService {
     }
 
     @Transactional
-    public void updateRouteStatus(UUID routeId, DeliveryStatus newStatus) {
+    public void updateRoute(UUID routeId, DeliveryRouteRequestDto requestDto) {
         DeliveryRoute route = deliveryRouteJpaRepository.findById(routeId)
                 .orElseThrow(() -> new EntityNotFoundException("DeliveryRoute not found"));
-        route.setCurrentStatus(newStatus);
+
+        route.updateRouteInfo(requestDto.getOriginHubId(), requestDto.getDestinationHubId(),
+                requestDto.getDeliveryPersonId());
+
+        route.updateEstimations(requestDto.getEstimatedDistance(), requestDto.getEstimatedTime());
+
         deliveryRouteJpaRepository.save(route);
     }
 
@@ -51,7 +54,7 @@ public class DeliveryRouteService {
     public void deleteRoute(UUID routeId) {
         DeliveryRoute route = deliveryRouteJpaRepository.findById(routeId)
                 .orElseThrow(() -> new EntityNotFoundException("DeliveryRoute not found"));
-        route.setIsDeleted(true);
+        route.softDelete();
         deliveryRouteJpaRepository.save(route);
     }
 }

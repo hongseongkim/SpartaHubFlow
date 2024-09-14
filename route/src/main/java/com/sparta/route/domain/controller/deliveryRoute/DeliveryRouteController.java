@@ -1,7 +1,7 @@
 package com.sparta.route.domain.controller.deliveryRoute;
 
 import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteDto;
-import com.sparta.route.domain.model.deliveryRoute.enums.DeliveryStatus;
+import com.sparta.route.domain.dto.deliveryRoute.DeliveryRouteRequestDto;
 import com.sparta.route.domain.service.deliveryRoute.DeliveryRouteService;
 import java.util.List;
 import java.util.UUID;
@@ -24,21 +24,15 @@ public class DeliveryRouteController {
 
     private final DeliveryRouteService deliveryRouteService;
 
-    @GetMapping("/{deliveryId}")
-    public ResponseEntity<List<DeliveryRouteDto>> getRoutesForDelivery(@PathVariable UUID deliveryId) {
-        List<DeliveryRouteDto> routes = deliveryRouteService.getRoutesForDelivery(deliveryId);
-        return ResponseEntity.ok(routes);
-    }
-
     @PostMapping
-    public ResponseEntity<Void> createDeliveryRoute(@RequestBody List<DeliveryRouteDto> routes, @RequestParam UUID deliveryId) {
+    public ResponseEntity<Void> createDeliveryRoute(@RequestBody List<DeliveryRouteRequestDto> routes, @RequestParam UUID deliveryId) {
         deliveryRouteService.createDeliveryRoute(deliveryId, routes);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{routeId}/status")
-    public ResponseEntity<Void> updateRouteStatus(@PathVariable UUID routeId, @RequestBody DeliveryStatus newStatus) {
-        deliveryRouteService.updateRouteStatus(routeId, newStatus);
+    public ResponseEntity<Void> updateRoute(@PathVariable UUID routeId, @RequestBody DeliveryRouteRequestDto requestDto) {
+        deliveryRouteService.updateRoute(routeId, requestDto);
         return ResponseEntity.ok().build();
     }
 
@@ -46,5 +40,11 @@ public class DeliveryRouteController {
     public ResponseEntity<Void> deleteRoute(@PathVariable UUID routeId) {
         deliveryRouteService.deleteRoute(routeId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{deliveryId}")
+    public ResponseEntity<List<DeliveryRouteDto>> getRoutesForDelivery(@PathVariable UUID deliveryId) {
+        List<DeliveryRouteDto> routes = deliveryRouteService.getRoutesForDelivery(deliveryId);
+        return ResponseEntity.ok(routes);
     }
 }
