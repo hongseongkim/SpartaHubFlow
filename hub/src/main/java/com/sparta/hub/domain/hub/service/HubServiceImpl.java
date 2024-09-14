@@ -3,7 +3,6 @@ package com.sparta.hub.domain.hub.service;
 import com.sparta.hub.domain.map.model.Coordinates;
 import com.sparta.hub.domain.map.service.MapService;
 import com.sparta.hub.domain.hub.dtos.HubDto;
-import com.sparta.hub.domain.hub.service.cache.HubCacheService;
 import com.sparta.hub.domain.hub.model.Hub;
 import com.sparta.hub.application.exception.ErrorCode;
 import com.sparta.hub.application.exception.ServiceException;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,22 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class HubServiceImpl implements HubService {
 
     private final MapService mapService;
-    private final HubCacheService hubCacheService;
     private final HubRepository hubRepository;
 
     @Override
     @Transactional
     public Hub createHub(HubDto hubDto) {
-
-        Coordinates coordinates = mapService.getCoordinates(hubDto.getAddress());
-
-        Double latitude = coordinates.getLatitude();
-        Double longitude = coordinates.getLongitude();
-
-        validateCoordinates(latitude, longitude);
         validateNameAndAddress(hubDto.getName(), hubDto.getAddress());
 
-        Hub hub = Hub.create(hubDto.getName(), hubDto.getAddress(), latitude, longitude);
+        Hub hub = Hub.create(hubDto.getName(), hubDto.getAddress(), 0.0, 0.0);
+        updateHubCoordinates(hub, hubDto.getAddress());
 
         return hubRepository.save(hub);
     }
@@ -46,29 +37,17 @@ public class HubServiceImpl implements HubService {
     @Override
     @Transactional
     public Hub updateHub(UUID hubId, HubDto hubDto) {
-
         validateNameAndAddress(hubDto.getName(), hubDto.getAddress());
 
         Hub hub = getHubById(hubId);
-
         hub.updateName(hubDto.getName());
 
-        // 주소가 변경되었는지 확인
         if (!hub.getAddress().equals(hubDto.getAddress())) {
-
             hub.updateAddress(hubDto.getAddress());
-
-            Coordinates coordinates = mapService.getCoordinates(hubDto.getAddress());
-
-            Double latitude = coordinates.getLatitude();
-            Double longitude = coordinates.getLongitude();
-
-            validateCoordinates(latitude, longitude);
-            hub.updateCoordinates(latitude, longitude);
+            updateHubCoordinates(hub, hubDto.getAddress());
         }
 
-        Hub updatedHub = hubRepository.save(hub);
-        return hubCacheService.cacheHub(updatedHub);
+        return hubRepository.save(hub);
     }
 
     @Override
@@ -78,8 +57,7 @@ public class HubServiceImpl implements HubService {
 
         hub.updateHubManager(hubDto.getHubManagerId(), hubDto.getHubManagerSlackId());
 
-        Hub updatedHub = hubRepository.save(hub);
-        return hubCacheService.cacheHub(updatedHub);
+        return hubRepository.save(hub);
     }
 
     @Override
@@ -88,21 +66,18 @@ public class HubServiceImpl implements HubService {
         Hub hub = getHubById(hubId);
         hub.softDelete();
         hubRepository.save(hub);
-        hubCacheService.evictHub(hubId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Hub getHubById(UUID hubId) {
-        return hubCacheService.getHub(hubId);
+        return hubRepository.findByIdAndIsDeletedFalse(hubId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<Hub> getAllHubs(Pageable pageable) {
-        List<Hub> hubs = hubCacheService.getAllHubs(pageable);
-        long total = hubRepository.countByIsDeletedFalse();
-        return new PageImpl<>(hubs, pageable, total);
+        return hubRepository.findAllByIsDeletedFalse(pageable);
     }
 
     @Transactional(readOnly = true)
@@ -114,6 +89,15 @@ public class HubServiceImpl implements HubService {
     @Transactional(readOnly = true)
     public Page<Hub> searchHubsByName(String name, Pageable pageable) {
         return hubRepository.searchByName(name, pageable);
+    }
+
+    private void updateHubCoordinates(Hub hub, String address) {
+        Coordinates coordinates = mapService.getCoordinates(address);
+        Double latitude = coordinates.getLatitude();
+        Double longitude = coordinates.getLongitude();
+
+        validateCoordinates(latitude, longitude);
+        hub.updateCoordinates(latitude, longitude);
     }
 
     private void validateNameAndAddress(String name, String address) {
