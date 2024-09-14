@@ -8,6 +8,10 @@ import com.sparta.hub.domain.hub.service.HubServiceImpl;
 import com.sparta.hub.application.security.AuthorizationService;
 import com.sparta.hub.application.utils.PageableUtils;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -31,16 +35,23 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/hubs")
+@Tag(name = "Hub Service", description = "허브 관리 API")
 public class HubController {
 
     private final HubServiceImpl hubServiceImpl;
     private final AuthorizationService authorizationService;
 
     @PostMapping
-    @Operation(summary = "허브 생성", description = "새로운 허브를 생성합니다.")
+    @Operation(summary = "허브 생성", description = "새로운 허브를 생성합니다. 매니저 권한이 필요합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "허브 생성 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "409", description = "중복된 허브 이름")
+    })
     public ResponseEntity<HubResponseDto> createHub(
-            @RequestHeader(value = "User-Role", required = false) String userRole,
-            @RequestBody @Valid HubRequest hubRequest) {
+            @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = false) String userRole,
+            @Parameter(description = "허브 생성 요청 정보", required = true) @RequestBody @Valid HubRequest hubRequest) {
 
         authorizationService.validateManagerRole(userRole);
 
@@ -50,11 +61,17 @@ public class HubController {
     }
 
     @PatchMapping("/{hubId}/manager")
-    @Operation(summary = "허브 매니저 할당", description = "허브에 매니저를 할당합니다.")
+    @Operation(summary = "허브 매니저 할당", description = "특정 허브에 매니저를 할당합니다. 마스터 권한이 필요합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "매니저 할당 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "허브를 찾을 수 없음")
+    })
     public ResponseEntity<HubResponseDto> assignHubManager(
-            @RequestHeader(value = "User-Role", required = false) String userRole,
-            @PathVariable UUID hubId,
-            @RequestBody @Valid HubManagerRequest hubManagerRequest) {
+            @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = false) String userRole,
+            @Parameter(description = "허브 ID", required = true) @PathVariable UUID hubId,
+            @Parameter(description = "허브 매니저 할당 요청 정보", required = true) @RequestBody @Valid HubManagerRequest hubManagerRequest) {
 
         authorizationService.validateMasterRole(userRole);
 
@@ -64,11 +81,17 @@ public class HubController {
     }
 
     @PatchMapping("/{hubId}")
-    @Operation(summary = "허브 수정", description = "ID를 통해 허브 정보를 수정합니다.")
+    @Operation(summary = "허브 수정", description = "허브 정보를 수정합니다. 매니저 권한이 필요합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "허브 수정 성공"),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "허브를 찾을 수 없음")
+    })
     public ResponseEntity<HubResponseDto> updateHub(
-            @RequestHeader(value = "User-Role", required = false) String userRole,
-            @PathVariable UUID hubId,
-            @RequestBody @Valid HubRequest hubRequest) {
+            @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = false) String userRole,
+            @Parameter(description = "허브 ID", required = true) @PathVariable UUID hubId,
+            @Parameter(description = "허브 수정 요청 정보", required = true) @RequestBody @Valid HubRequest hubRequest) {
 
         authorizationService.validateManagerRole(userRole);
 
@@ -78,10 +101,15 @@ public class HubController {
     }
 
     @DeleteMapping("/{hubId}")
-    @Operation(summary = "허브 삭제", description = "ID를 통해 허브를 소프트 삭제합니다.")
+    @Operation(summary = "허브 삭제", description = "허브를 소프트 삭제합니다. 매니저 권한이 필요합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "허브 삭제 성공"),
+            @ApiResponse(responseCode = "403", description = "권한 없음"),
+            @ApiResponse(responseCode = "404", description = "허브를 찾을 수 없음")
+    })
     public ResponseEntity<Void> softDeleteHub(
-            @RequestHeader(value = "User-Role", required = false) String userRole,
-            @PathVariable UUID hubId) {
+            @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = false) String userRole,
+            @Parameter(description = "삭제할 허브 ID", required = true) @PathVariable UUID hubId) {
 
         authorizationService.validateManagerRole(userRole);
 
@@ -90,10 +118,14 @@ public class HubController {
         return ResponseEntity.noContent().build();
     }
 
-
     @GetMapping("/{hubId}")
-    @Operation(summary = "허브 조회", description = "ID를 통해 허브를 조회합니다.")
-    public ResponseEntity<HubResponseDto> getHubById(@PathVariable UUID hubId) {
+    @Operation(summary = "허브 조회", description = "특정 ID의 허브를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "허브 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "허브를 찾을 수 없음")
+    })
+    public ResponseEntity<HubResponseDto> getHubById(
+            @Parameter(description = "조회할 허브 ID", required = true) @PathVariable UUID hubId) {
 
         Hub hub = hubServiceImpl.getHubById(hubId);
 
@@ -102,7 +134,11 @@ public class HubController {
 
     @GetMapping
     @Operation(summary = "허브 목록 페이지 조회", description = "모든 허브 목록을 페이지로 조회합니다.")
-    public ResponseEntity<Page<HubResponseDto>> getAllHubs(Pageable pageable) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "허브 목록 조회 성공")
+    })
+    public ResponseEntity<Page<HubResponseDto>> getAllHubs(
+            @Parameter(description = "페이지 정보 (예: page=0&size=20&sort=name,desc)") Pageable pageable) {
 
         pageable = PageableUtils.applyPageSizeLimit(pageable);
         pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
@@ -112,11 +148,15 @@ public class HubController {
         return ResponseEntity.ok(hubs.map(HubResponseDto::from));
     }
 
-    @GetMapping("/full-list")
+    @GetMapping("/list")
     @Operation(summary = "전체 허브 목록 조회", description = "페이지네이션 없이 모든 허브 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "전체 허브 목록 조회 성공")
+    })
     public ResponseEntity<List<HubResponseDto>> getAllHubsWithoutPagination() {
 
         List<Hub> hubs = hubServiceImpl.getAllHubsWithoutPagination();
+
         List<HubResponseDto> hubResponseDtos = hubs.stream()
                 .map(HubResponseDto::from)
                 .collect(Collectors.toList());
@@ -126,9 +166,12 @@ public class HubController {
 
     @GetMapping("/search")
     @Operation(summary = "허브 이름 검색", description = "허브 이름을 통해 검색합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "허브 검색 성공")
+    })
     public ResponseEntity<Page<HubResponseDto>> searchHubsByName(
-            @RequestParam String name,
-            Pageable pageable) {
+            @Parameter(description = "검색할 허브 이름", required = true) @RequestParam String name,
+            @Parameter(description = "페이지 정보 (예: page=0&size=10&sort=createdAt,asc)") Pageable pageable) {
 
         pageable = PageableUtils.applyPageSizeLimit(pageable);
         pageable = PageableUtils.applyDefaultSortIfNecessary(pageable);
@@ -137,7 +180,4 @@ public class HubController {
 
         return ResponseEntity.ok(hubs.map(HubResponseDto::from));
     }
-
-
-
 }
