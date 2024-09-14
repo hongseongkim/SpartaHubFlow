@@ -31,7 +31,17 @@ public enum ErrorCode {
     HUB_DELETED(HttpStatus.CONFLICT, "HUB_0004", "해당 허브는 삭제되었습니다."),
 
     // Cache Errors
-    CACHE_NOT_AVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "CACHE_0001", "캐시 시스템에 접근할 수 없습니다.");
+    CACHE_NOT_AVAILABLE(HttpStatus.INTERNAL_SERVER_ERROR, "CACHE_0001", "캐시 시스템에 접근할 수 없습니다."),
+
+    // Direction Errors
+    DIRECTION_INVALID_ORIGIN(HttpStatus.BAD_REQUEST, "DIR_0001", "출발지 정보가 올바르지 않습니다."),
+    DIRECTION_INVALID_DESTINATION(HttpStatus.BAD_REQUEST, "DIR_0002", "목적지 정보가 올바르지 않습니다."),
+    DIRECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "DIR_0003", "경로를 찾을 수 없습니다."),
+    DIRECTION_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DIR_0004", "경로 탐색 API 오류가 발생했습니다."),
+    DIRECTION_INVALID_MODE(HttpStatus.BAD_REQUEST, "DIR_0005", "잘못된 이동 수단이 지정되었습니다."),
+    DIRECTION_REQUEST_INTERRUPTED(HttpStatus.INTERNAL_SERVER_ERROR, "DIR_0006", "경로 탐색 요청이 중단되었습니다."),
+    DIRECTION_IO_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DIR_0007", "경로 탐색 중 I/O 오류가 발생했습니다."),
+    DIRECTION_UNEXPECTED_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "DIR_0008", "경로 탐색 중 예기치 않은 오류가 발생했습니다.");
 
     private final HttpStatus status;
     private final String code;
