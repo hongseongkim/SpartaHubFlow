@@ -1,14 +1,20 @@
 package com.sparta.hub.domain.route.model;
 
 import com.sparta.hub.application.configuration.auditing.listener.SoftDeleteListener;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -38,6 +44,11 @@ public class HubRoute {
     @Column(name = "destination_hub_id")
     private UUID destinationHubId;
 
+    @ElementCollection
+    @CollectionTable(name = "p_hub_route_segments", joinColumns = @JoinColumn(name = "hub_route_id"))
+    @OrderColumn(name = "segment_order")
+    private List<UUID> routeSegments;
+
     @Column(name = "estimated_time")
     private Integer estimatedTime;
 
@@ -60,7 +71,7 @@ public class HubRoute {
 
     @CreatedBy
     @Column(name = "created_by")
-    private String createdBy = "ADMIN";
+    private String createdBy;
 
     @LastModifiedBy
     @Column(name = "updated_by")
@@ -69,27 +80,40 @@ public class HubRoute {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-    public static HubRoute create(UUID originHubId, UUID destinationHubId, Integer estimatedTime, String routeDisplayName) {
-        return new HubRoute(null, originHubId, destinationHubId, estimatedTime, routeDisplayName);
+    public static HubRoute create(UUID originHubId, UUID destinationHubId) {
+        return new HubRoute(null, originHubId, destinationHubId, null, null, new ArrayList<>());
     }
 
-    private HubRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId, Integer estimatedTime, String routeDisplayName) {
+    private HubRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId, Integer estimatedTime, String routeDisplayName, List<UUID> routeSegments) {
         this.hubRouteId = hubRouteId;
         this.originHubId = originHubId;
         this.destinationHubId = destinationHubId;
         this.estimatedTime = estimatedTime;
         this.routeDisplayName = routeDisplayName;
+        this.routeSegments = routeSegments;
     }
 
-    public void updateHubRoute (UUID destinationHubId, Integer estimatedTime, String routeDisplayName) {
+    public void updateHubRoute(UUID originHubId, UUID destinationHubId) {
+        if (originHubId != null) {
+            this.originHubId = originHubId;
+        }
         if (destinationHubId != null) {
             this.destinationHubId = destinationHubId;
         }
+    }
+
+    public void updateHubRouteInfo (Integer estimatedTime, String routeDisplayName) {
         if (estimatedTime != null) {
             this.estimatedTime = estimatedTime;
         }
         if (routeDisplayName != null && !routeDisplayName.isEmpty()) {
             this.routeDisplayName = routeDisplayName;
+        }
+    }
+
+    public void updateRouteSegments(List<UUID> routeSegments) {
+        if (!routeSegments.isEmpty()) {
+            this.routeSegments = routeSegments;
         }
     }
 
