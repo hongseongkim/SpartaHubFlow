@@ -1,14 +1,17 @@
 package com.sparta.hub.domain.route.service.cache;
 
+import com.sparta.hub.application.exception.ErrorCode;
+import com.sparta.hub.application.exception.ServiceException;
 import com.sparta.hub.domain.route.dto.HubRouteDto;
 import com.sparta.hub.domain.route.dto.HubRouteResponseDto;
 import com.sparta.hub.domain.route.model.HubRoute;
 import com.sparta.hub.infrastructure.persistence.HubRouteRepository;
-import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,53 +22,50 @@ public class HubRouteCacheService {
     private final HubRouteRepository hubRouteJpaRepository;
 
     @Transactional
-    public HubRouteResponseDto saveHubRoute(HubRouteDto hubRouteDto) {
-        HubRoute hubRoute = HubRouteDto.toEntity(hubRouteDto);
-        HubRoute savedRoute = hubRouteJpaRepository.save(hubRoute);
-        return HubRouteResponseDto.from(savedRoute);
+    public HubRoute saveHubRoute(HubRoute hubRoute) {
+        return hubRouteJpaRepository.save(hubRoute);
     }
 
     @Transactional
-    public HubRouteResponseDto updateHubRoute(HubRouteDto hubRouteDto) {
-        HubRoute route = hubRouteJpaRepository.findByOriginHubIdAndDestinationHubIdAndIsDeletedFalse(
-                        hubRouteDto.getOriginHubId(), hubRouteDto.getDestinationHubId())
-                .orElseThrow(() -> new EntityNotFoundException("해당 출발지와 목적지의 경로 정보를 찾을 수 없습니다."));
+    public HubRoute updateHubRoute(UUID hubRouteId, HubRouteDto hubRouteDto) {
+        HubRoute route = hubRouteJpaRepository.findByHubRouteIdAndIsDeletedFalse(hubRouteId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
 
-        route.updateHubRoute(hubRouteDto.getDestinationHubId(), hubRouteDto.getEstimatedTime(),
-                hubRouteDto.getRouteDisplayName());
+        route.updateHubRoute(hubRouteDto.getOriginHubId(), hubRouteDto.getDestinationHubId());
+        route.updateHubRouteInfo(hubRouteDto.getEstimatedTime(), hubRouteDto.getRouteDisplayName());
+        route.updateRouteSegments(hubRouteDto.getRouteSegments());
 
-        HubRoute updatedRoute = hubRouteJpaRepository.save(route);
-        return HubRouteResponseDto.from(updatedRoute);
+        return hubRouteJpaRepository.save(route);
     }
 
     @Transactional
-    public void deleteHubRoute(UUID originHubId, UUID destinationHubId) {
-        HubRoute route = hubRouteJpaRepository.findByOriginHubIdAndDestinationHubIdAndIsDeletedFalse(originHubId, destinationHubId)
-                .orElseThrow(() -> new EntityNotFoundException("삭제할 경로 정보를 찾을 수 없습니다."));
+    public void deleteHubRoute(UUID hubRouteId) {
+        HubRoute route = hubRouteJpaRepository.findByHubRouteIdAndIsDeletedFalse(hubRouteId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
         route.softDelete();
         hubRouteJpaRepository.save(route);
     }
 
     @Transactional(readOnly = true)
-    public HubRouteResponseDto getHubRoute(UUID originHubId, UUID destinationHubId) {
-        HubRoute route = hubRouteJpaRepository.findByOriginHubIdAndDestinationHubIdAndIsDeletedFalse(originHubId, destinationHubId)
-                .orElseThrow(() -> new EntityNotFoundException("요청한 경로 정보를 찾을 수 없습니다."));
-        return HubRouteResponseDto.from(route);
+    public HubRoute getHubRoute(UUID hubRouteId) {
+        return hubRouteJpaRepository.findByHubRouteIdAndIsDeletedFalse(hubRouteId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
-    public List<HubRouteResponseDto> getHubRoutesByOrigin(UUID originHubId) {
-        List<HubRoute> routes = hubRouteJpaRepository.findByOriginHubIdAndIsDeletedFalse(originHubId);
-        return routes.stream()
-                .map(HubRouteResponseDto::from)
-                .collect(Collectors.toList());
+    public List<HubRoute> getHubRoutesByOrigin(UUID originHubId) {
+        return hubRouteJpaRepository.findByOriginHubIdAndIsDeletedFalse(originHubId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
     }
 
     @Transactional(readOnly = true)
-    public List<HubRouteResponseDto> getAllHubRoutes() {
-        List<HubRoute> routes = hubRouteJpaRepository.findAllByIsDeletedFalse();
-        return routes.stream()
-                .map(HubRouteResponseDto::from)
-                .toList();
+    public List<HubRoute> getHubRoutesByDestination(UUID destinationHubId) {
+        return hubRouteJpaRepository.findByDestinationHubIdAndIsDeletedFalse(destinationHubId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<HubRoute> getAllHubRoutes(Pageable pageable) {
+        return hubRouteJpaRepository.findAllByIsDeletedFalse(pageable);
     }
 }
