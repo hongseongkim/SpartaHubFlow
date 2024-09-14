@@ -1,9 +1,8 @@
-package com.sparta.hub.domain.hubRoute.controller;
+package com.sparta.hub.domain.route.controller;
 
-import com.sparta.hub.domain.hubRoute.dto.HubRouteDto;
-import com.sparta.hub.domain.hubRoute.dto.HubRouteRequestDto;
-import com.sparta.hub.domain.hubRoute.dto.HubRouteResponseDto;
-import com.sparta.hub.domain.hubRoute.service.HubRouteService;
+import com.sparta.hub.domain.route.dto.HubRouteRequestDto;
+import com.sparta.hub.domain.route.dto.HubRouteResponseDto;
+import com.sparta.hub.domain.route.service.HubRouteService;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.sparta.hub.domain.hubRoute.model;
+package com.sparta.hub.domain.route.model;
 
 import com.sparta.hub.application.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.Column;

@@ -1,7 +1,7 @@
 package com.sparta.hub.application.configuration.auditing.listener;
 
 import com.sparta.hub.domain.hub.model.Hub;
-import com.sparta.hub.domain.hubRoute.model.HubRoute;
+import com.sparta.hub.domain.route.model.HubRoute;
 import jakarta.persistence.PreUpdate;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;

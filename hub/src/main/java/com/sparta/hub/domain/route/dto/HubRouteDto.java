@@ -1,6 +1,6 @@
-package com.sparta.hub.domain.hubRoute.dto;
+package com.sparta.hub.domain.route.dto;
 
-import com.sparta.hub.domain.hubRoute.model.HubRoute;
+import com.sparta.hub.domain.route.model.HubRoute;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;

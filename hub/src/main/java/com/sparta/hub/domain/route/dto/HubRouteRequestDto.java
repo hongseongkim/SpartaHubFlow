@@ -1,4 +1,4 @@
-package com.sparta.hub.domain.hubRoute.dto;
+package com.sparta.hub.domain.route.dto;
 
 import java.util.UUID;
 import lombok.Getter;

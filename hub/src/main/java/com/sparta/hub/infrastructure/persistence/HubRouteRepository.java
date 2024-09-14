@@ -1,6 +1,6 @@
 package com.sparta.hub.infrastructure.persistence;
 
-import com.sparta.hub.domain.hubRoute.model.HubRoute;
+import com.sparta.hub.domain.route.model.HubRoute;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

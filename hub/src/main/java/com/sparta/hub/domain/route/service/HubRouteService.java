@@ -1,9 +1,9 @@
-package com.sparta.hub.domain.hubRoute.service;
+package com.sparta.hub.domain.route.service;
 
 import com.sparta.hub.domain.hub.service.HubService;
-import com.sparta.hub.domain.hubRoute.dto.HubRouteDto;
-import com.sparta.hub.domain.hubRoute.dto.HubRouteResponseDto;
-import com.sparta.hub.domain.hubRoute.service.cache.HubRouteCacheService;
+import com.sparta.hub.domain.route.dto.HubRouteDto;
+import com.sparta.hub.domain.route.dto.HubRouteResponseDto;
+import com.sparta.hub.domain.route.service.cache.HubRouteCacheService;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.UUID;
