@@ -1,4 +1,4 @@
-package com.sparta.hub.domain.route.utils;
+package com.sparta.hub.domain.route.service.utils;
 
 import com.sparta.hub.domain.hub.model.Hub;
 import lombok.RequiredArgsConstructor;

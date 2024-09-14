@@ -1,4 +1,4 @@
-package com.sparta.hub.domain.route.utils;
+package com.sparta.hub.domain.route.service.utils;
 
 import com.sparta.hub.application.exception.ErrorCode;
 import com.sparta.hub.application.exception.ServiceException;
