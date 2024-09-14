@@ -1,13 +1,18 @@
 package com.sparta.hub.application.initializer;
 
+import com.sparta.hub.domain.hub.data.HubData;
+import com.sparta.hub.domain.hub.data.HubDataLoader;
 import com.sparta.hub.domain.map.model.Coordinates;
 import com.sparta.hub.domain.map.service.MapService;
 import com.sparta.hub.domain.hub.model.Hub;
 import com.sparta.hub.domain.hub.service.HubServiceImpl;
+import com.sparta.hub.domain.route.dto.HubRouteRequestDto;
+import com.sparta.hub.domain.route.dto.HubRouteResponseDto;
 import com.sparta.hub.domain.route.model.HubRoute;
 import com.sparta.hub.domain.route.service.HubRouteService;
 import com.sparta.hub.infrastructure.persistence.HubRepository;
 import com.sparta.hub.infrastructure.persistence.HubRouteRepository;
+import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
@@ -21,7 +26,6 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class HubAndRouteInitializerService implements ApplicationRunner {
-
     private final HubServiceImpl hubService;
     private final HubRouteService hubRouteService;
     private final MapService mapService;
@@ -31,91 +35,80 @@ public class HubAndRouteInitializerService implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        initializeHubs();
-        initializeHubRoutes();
+        try {
+            initializeHubs();
+            initializeHubRoutes();
+        } catch (Exception e) {
+            log.error("Failed to initialize hubs and routes", e);
+            throw new RuntimeException("Application initialization failed", e);
+        }
     }
 
-    private void initializeHubs() {
-        if (hubRepository.count() == 0) {
+    private List<HubData> loadHubData() throws IOException {
+        try {
+            return HubDataLoader.getHubsData();
+        } catch (IOException e) {
+            log.error("Failed to load hub data", e);
+            throw new IOException("Hub data loading failed", e);
+        }
+    }
 
+    private void initializeHubs() throws IOException {
+        if (hubRepository.count() == 0) {
             log.info("허브 초기화 시작");
 
-            List<String[]> hubsData = getHubsData();
+            List<HubData> hubsData = loadHubData();
 
-            for (String[] hubData : hubsData) {
-                String name = hubData[0];
-                String address = hubData[1];
-
+            for (HubData hubData : hubsData) {
                 try {
-                    Coordinates coordinates = mapService.getCoordinates(address);
-                    Double latitude = coordinates.getLatitude();
-                    Double longitude = coordinates.getLongitude();
-
-                    Hub hub = Hub.create(name, address, latitude, longitude);
+                    Coordinates coordinates = mapService.getCoordinates(hubData.getAddress());
+                    Hub hub = Hub.create(hubData.getName(), hubData.getAddress(), coordinates.getLatitude(), coordinates.getLongitude());
                     hubRepository.save(hub);
-
+                    log.info("허브 생성: {}", hub.getName());
                 } catch (Exception e) {
-                    log.error("Failed to get coordinates for address: " + address + ". Error: " + e.getMessage());
+                    log.error("허브를 생성에 실패했습니다: {}. Error: {}", hubData.getName(), e.getMessage());
                 }
             }
-            log.info("허브 초기화 완료");
+            log.info("허브 초기화 완료. 총 {} 개의 허브가 생성되었습니다.", hubRepository.count());
+        } else {
+            log.info("허브가 이미 초기화되어 있습니다. 총 {} 개의 허브가 존재합니다.", hubRepository.count());
         }
     }
 
     private void initializeHubRoutes() {
         if (hubRouteJpaRepository.count() == 0) {
-
             log.info("허브 라우트 초기화 시작");
 
             List<Hub> allHubs = hubService.getAllHubsWithoutPagination();
 
+            if (allHubs.isEmpty()) {
+                log.warn("허브 데이터가 없습니다. 허브 경로를 생성할 수 없습니다.");
+                return;
+            }
+
             log.info("불러온 허브 데이터 개수: {}", allHubs.size());
 
-            List<HubRoute> routes = createRoutes(allHubs);
+            List<HubRoute> routes = new ArrayList<>();
+            for (int i = 0; i < allHubs.size(); i++) {
+                for (int j = i + 1; j < allHubs.size(); j++) {
+                    Hub originHub = allHubs.get(i);
+                    Hub destinationHub = allHubs.get(j);
+                    try {
+                        HubRoute route = hubRouteService.createHubRoute(originHub.getHubId(), destinationHub.getHubId());
+                        routes.add(route);
+                        log.info("허브 라우트 생성: {} -> {}", originHub.getName(), destinationHub.getName());
+                    } catch (Exception e) {
+                        log.error("허브 라우트 생성 실패: {} -> {}. Error: {}", originHub.getName(), destinationHub.getName(), e.getMessage());
+                    }
+                }
+            }
+
             hubRouteJpaRepository.saveAll(routes);
 
-            log.info("허브 라우트가 성공적으로 저장되었습니다.");
+            log.info("허브 라우트 초기화 완료. 총 {} 개의 라우트가 생성되었습니다.", routes.size());
+        } else {
+            log.info("허브 라우트가 이미 초기화되어 있습니다. 총 {} 개의 라우트가 존재합니다.", hubRouteJpaRepository.count());
         }
     }
 
-    private List<HubRoute> createRoutes(List<Hub> hubs) {
-        List<HubRoute> routes = new ArrayList<>();
-
-        for (int i = 0; i < hubs.size() - 1; i++) {
-            Hub originHub = hubs.get(i);
-            Hub destinationHub = hubs.get(i + 1);
-
-            HubRoute route = HubRoute.create(
-                    originHub.getHubId(),
-                    destinationHub.getHubId(),
-                    hubRouteService.calculateEstimatedTime(originHub.getHubId(), destinationHub.getHubId()),
-                    hubRouteService.generateRouteDisplayName(originHub.getName(), destinationHub.getName())
-            );
-
-            routes.add(route);
-        }
-        return routes;
-    }
-
-    private List<String[]> getHubsData() {
-        return List.of(
-                new String[]{"서울특별시 센터", "서울특별시 송파구 송파대로 55"},
-                new String[]{"경기 북부 센터", "경기도 고양시 덕양구 권율대로 570"},
-                new String[]{"경기 남부 센터", "경기도 이천시 덕평로 257-21"},
-                new String[]{"부산광역시 센터", "부산 동구 중앙대로 206"},
-                new String[]{"대구광역시 센터", "대구 북구 태평로 161"},
-                new String[]{"인천광역시 센터", "인천 남동구 정각로 29"},
-                new String[]{"광주광역시 센터", "광주 서구 내방로 111"},
-                new String[]{"대전광역시 센터", "대전 서구 둔산로 100"},
-                new String[]{"울산광역시 센터", "울산 남구 중앙로 201"},
-                new String[]{"세종특별자치시 센터", "세종특별자치시 한누리대로 2130"},
-                new String[]{"강원특별자치도 센터", "강원특별자치도 춘천시 중앙로 1"},
-                new String[]{"충청북도 센터", "충북 청주시 상당구 상당로 82"},
-                new String[]{"충청남도 센터", "충남 홍성군 홍북읍 충남대로 21"},
-                new String[]{"전북특별자치도 센터", "전북특별자치도 전주시 완산구 효자로 225"},
-                new String[]{"전라남도 센터", "전남 무안군 삼향읍 오룡길 1"},
-                new String[]{"경상북도 센터", "경북 안동시 풍천면 도청대로 455"},
-                new String[]{"경상남도 센터", "경남 창원시 의창구 중앙대로 300"}
-        );
-    }
 }
