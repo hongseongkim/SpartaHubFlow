@@ -2,13 +2,11 @@ package com.sparta.hub.domain.route.service.cache;
 
 import com.sparta.hub.application.exception.ErrorCode;
 import com.sparta.hub.application.exception.ServiceException;
-import com.sparta.hub.domain.route.dto.HubRouteDto;
-import com.sparta.hub.domain.route.dto.HubRouteResponseDto;
+import com.sparta.hub.domain.route.dto.HubRoutePatchDto;
 import com.sparta.hub.domain.route.model.HubRoute;
 import com.sparta.hub.infrastructure.persistence.HubRouteRepository;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,18 +22,6 @@ public class HubRouteCacheService {
     @Transactional
     public HubRoute saveHubRoute(HubRoute hubRoute) {
         return hubRouteJpaRepository.save(hubRoute);
-    }
-
-    @Transactional
-    public HubRoute updateHubRoute(UUID hubRouteId, HubRouteDto hubRouteDto) {
-        HubRoute route = hubRouteJpaRepository.findByHubRouteIdAndIsDeletedFalse(hubRouteId)
-                .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
-
-        route.updateHubRoute(hubRouteDto.getOriginHubId(), hubRouteDto.getDestinationHubId());
-        route.updateHubRouteInfo(hubRouteDto.getEstimatedTime(), hubRouteDto.getRouteDisplayName());
-        route.updateRouteSegments(hubRouteDto.getRouteSegments());
-
-        return hubRouteJpaRepository.save(route);
     }
 
     @Transactional

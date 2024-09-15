@@ -2,7 +2,7 @@ package com.sparta.hub.domain.route.controller;
 
 import com.sparta.hub.application.security.AuthorizationService;
 import com.sparta.hub.application.utils.PageableUtils;
-import com.sparta.hub.domain.route.dto.HubRouteDto;
+import com.sparta.hub.domain.route.dto.HubRoutePatchDto;
 import com.sparta.hub.domain.route.dto.HubRouteRequestDto;
 import com.sparta.hub.domain.route.dto.HubRouteResponseDto;
 import com.sparta.hub.domain.route.model.HubRoute;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -72,11 +71,11 @@ public class HubRouteController {
     public ResponseEntity<HubRouteResponseDto> updateHubRoute(
             @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = false) String userRole,
             @Parameter(description = "수정할 허브 경로 ID") @PathVariable UUID hubRouteId,
-            @Valid @RequestBody HubRouteDto hubRouteDto) {
+            @Valid @RequestBody HubRoutePatchDto hubRoutePatchDto) {
 
         authorizationService.validateMasterRole(userRole);
 
-        HubRoute updatedHubRoute = hubRouteService.updateHubRoute(hubRouteId, hubRouteDto);
+        HubRoute updatedHubRoute = hubRouteService.updateHubRoute(hubRouteId, hubRoutePatchDto);
         return ResponseEntity.ok(HubRouteResponseDto.from(updatedHubRoute));
     }
 
