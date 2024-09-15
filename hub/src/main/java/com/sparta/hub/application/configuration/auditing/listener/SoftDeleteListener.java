@@ -1,7 +1,7 @@
-package com.sparta.delivery.infrastructure.configuration.auditing.listener;
+package com.sparta.hub.application.configuration.auditing.listener;
 
-import com.sparta.delivery.domain.delivery.model.Delivery;
-import com.sparta.delivery.domain.route.domain.model.DeliveryRoute;
+import com.sparta.hub.domain.hub.model.Hub;
+import com.sparta.hub.domain.route.model.HubRoute;
 import jakarta.persistence.PreUpdate;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -12,24 +12,25 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Component
 public class SoftDeleteListener {
+
     @PreUpdate
     public void preUpdate(Object object) {
-        if (object instanceof Delivery delivery) {
-            handleSoftDelete(delivery);
-        } else if (object instanceof DeliveryRoute deliveryRoute) {
-            handleSoftDelete(deliveryRoute);
+        if (object instanceof Hub hub) {
+            handleSoftDelete(hub);
+        } else if (object instanceof HubRoute hubRoute) {
+            handleSoftDelete(hubRoute);
         }
     }
 
-    private void handleSoftDelete(Delivery delivery) {
-        if (delivery.getDeletedAt() != null && delivery.getDeletedBy() == null) {
-            delivery.setDeletedBy(getCurrentAuditor().get());
+    private void handleSoftDelete(Hub hub) {
+        if (hub.getDeletedAt() != null && hub.getDeletedBy() == null) {
+            hub.setDeletedBy(getCurrentAuditor().orElse("Unknown User"));
         }
     }
 
-    private void handleSoftDelete(DeliveryRoute deliveryRoute) {
-        if (deliveryRoute.getDeletedAt() != null && deliveryRoute.getDeletedBy() == null) {
-            deliveryRoute.setDeletedBy(getCurrentAuditor().get());
+    private void handleSoftDelete(HubRoute hubRoute) {
+        if (hubRoute.getDeletedAt() != null && hubRoute.getDeletedBy() == null) {
+            hubRoute.setDeletedBy(getCurrentAuditor().orElse("Unknown User"));
         }
     }
 

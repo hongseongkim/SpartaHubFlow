@@ -63,6 +63,9 @@ dependencies {
     // Datatype
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
+    // Google Maps API
+    implementation 'com.google.maps:google-maps-services:0.18.0'
+
     // Test dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
