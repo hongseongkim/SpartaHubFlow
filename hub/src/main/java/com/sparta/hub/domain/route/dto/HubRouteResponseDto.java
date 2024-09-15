@@ -2,6 +2,7 @@ package com.sparta.hub.domain.route.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sparta.hub.domain.route.model.HubRoute;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -17,6 +18,7 @@ public class HubRouteResponseDto {
     private Integer estimatedTime;
     private Double estimatedDistance;
     private String routeDisplayName;
+    private List<UUID> routeSegments;
 
     public static HubRouteResponseDto from(HubRoute hubRoute) {
         return HubRouteResponseDto.builder()
@@ -26,6 +28,7 @@ public class HubRouteResponseDto {
                 .estimatedTime(hubRoute.getEstimatedTime())
                 .estimatedDistance(hubRoute.getEstimatedDistance())
                 .routeDisplayName(hubRoute.getRouteDisplayName())
+                .routeSegments(hubRoute.getRouteSegments())
                 .build();
     }
 

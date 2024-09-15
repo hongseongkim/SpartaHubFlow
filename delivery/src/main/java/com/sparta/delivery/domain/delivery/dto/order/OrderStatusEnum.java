@@ -1,4 +1,4 @@
-package com.sparta.delivery.domain.dto.order;
+package com.sparta.delivery.domain.delivery.dto.order;
 
 import lombok.ToString;
 

@@ -1,6 +1,6 @@
 package com.sparta.delivery.infrastructure.client;
 
-import com.sparta.delivery.domain.dto.order.OrderDto;
+import com.sparta.delivery.domain.delivery.dto.order.OrderDto;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
