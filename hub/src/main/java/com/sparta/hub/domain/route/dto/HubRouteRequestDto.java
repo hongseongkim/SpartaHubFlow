@@ -5,11 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class HubRouteRequestDto {
-
     private UUID originHubId;
     private UUID destinationHubId;
-
-    public HubRouteDto toDTO() {
-        return HubRouteDto.create(originHubId, destinationHubId);
-    }
 }

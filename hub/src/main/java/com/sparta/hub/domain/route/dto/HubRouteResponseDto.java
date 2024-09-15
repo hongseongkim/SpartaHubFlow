@@ -15,6 +15,7 @@ public class HubRouteResponseDto {
     private UUID originHubId;
     private UUID destinationHubId;
     private Integer estimatedTime;
+    private Double estimatedDistance;
     private String routeDisplayName;
 
     public static HubRouteResponseDto from(HubRoute hubRoute) {
@@ -23,6 +24,7 @@ public class HubRouteResponseDto {
                 .originHubId(hubRoute.getOriginHubId())
                 .destinationHubId(hubRoute.getDestinationHubId())
                 .estimatedTime(hubRoute.getEstimatedTime())
+                .estimatedDistance(hubRoute.getEstimatedDistance())
                 .routeDisplayName(hubRoute.getRouteDisplayName())
                 .build();
     }

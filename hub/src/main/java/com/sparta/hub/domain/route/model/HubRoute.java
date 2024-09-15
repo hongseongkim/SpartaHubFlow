@@ -52,6 +52,9 @@ public class HubRoute {
     @Column(name = "estimated_time")
     private Integer estimatedTime;
 
+    @Column(name = "estimated_distance")
+    private Double estimatedDistance;
+
     @Column(name = "route_display_name")
     private String routeDisplayName;
 
@@ -81,19 +84,20 @@ public class HubRoute {
     private String deletedBy;
 
     public static HubRoute create(UUID originHubId, UUID destinationHubId) {
-        return new HubRoute(null, originHubId, destinationHubId, null, null, new ArrayList<>());
+        return new HubRoute(null, originHubId, destinationHubId, null, null, null, new ArrayList<>());
     }
 
-    private HubRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId, Integer estimatedTime, String routeDisplayName, List<UUID> routeSegments) {
+    private HubRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId, Integer estimatedTime, Double estimatedDistance,String routeDisplayName, List<UUID> routeSegments) {
         this.hubRouteId = hubRouteId;
         this.originHubId = originHubId;
         this.destinationHubId = destinationHubId;
         this.estimatedTime = estimatedTime;
+        this.estimatedDistance = estimatedDistance;
         this.routeDisplayName = routeDisplayName;
         this.routeSegments = routeSegments;
     }
 
-    public void updateHubRoute(UUID originHubId, UUID destinationHubId) {
+    public void updateOriginAndDestination(UUID originHubId, UUID destinationHubId) {
         if (originHubId != null) {
             this.originHubId = originHubId;
         }
@@ -102,9 +106,12 @@ public class HubRoute {
         }
     }
 
-    public void updateHubRouteInfo (Integer estimatedTime, String routeDisplayName) {
+    public void updateHubRouteInfo (Integer estimatedTime, Double estimatedDistance,String routeDisplayName) {
         if (estimatedTime != null) {
             this.estimatedTime = estimatedTime;
+        }
+        if (estimatedDistance != null) {
+            this.estimatedDistance = estimatedDistance;
         }
         if (routeDisplayName != null && !routeDisplayName.isEmpty()) {
             this.routeDisplayName = routeDisplayName;
