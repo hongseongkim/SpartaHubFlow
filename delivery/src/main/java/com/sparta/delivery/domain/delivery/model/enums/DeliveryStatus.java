@@ -1,4 +1,4 @@
-package com.sparta.delivery.domain.model.enums;
+package com.sparta.delivery.domain.delivery.model.enums;
 
 public enum DeliveryStatus {
     READY_FOR_DELIVERY("배송 준비중"),
@@ -9,10 +9,11 @@ public enum DeliveryStatus {
     PROCESSING_AT_HUB("허브 처리중"),
     DEPARTED_FROM_HUB("허브 출발"),
 
+
+    ASSIGN_DELIVERY_PERSON("배송 기사 배정"),
+    PICKED_UP("물품 픽업됨"),
     IN_TRANSIT("배송중"),
     DELIVERED("배송 완료"),
-
-    PICKED_UP("물품 픽업됨"),
     ON_HOLD("배송 보류"),
     CANCELED("배송 취소됨");
 

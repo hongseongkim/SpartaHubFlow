@@ -1,6 +1,7 @@
 package com.sparta.delivery.infrastructure.configuration.auditing.listener;
 
-import com.sparta.delivery.domain.model.Delivery;
+import com.sparta.delivery.domain.delivery.model.Delivery;
+import com.sparta.delivery.domain.route.domain.model.DeliveryRoute;
 import jakarta.persistence.PreUpdate;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
@@ -13,8 +14,22 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class SoftDeleteListener {
     @PreUpdate
     public void preUpdate(Object object) {
-        if (object instanceof Delivery delivery && (delivery.getDeletedAt() != null && delivery.getDeletedBy() == null)) {
-            delivery.setDeletedBy(getCurrentAuditor().orElse("Unknown User"));
+        if (object instanceof Delivery delivery) {
+            handleSoftDelete(delivery);
+        } else if (object instanceof DeliveryRoute deliveryRoute) {
+            handleSoftDelete(deliveryRoute);
+        }
+    }
+
+    private void handleSoftDelete(Delivery delivery) {
+        if (delivery.getDeletedAt() != null && delivery.getDeletedBy() == null) {
+            delivery.setDeletedBy(getCurrentAuditor().get());
+        }
+    }
+
+    private void handleSoftDelete(DeliveryRoute deliveryRoute) {
+        if (deliveryRoute.getDeletedAt() != null && deliveryRoute.getDeletedBy() == null) {
+            deliveryRoute.setDeletedBy(getCurrentAuditor().get());
         }
     }
 

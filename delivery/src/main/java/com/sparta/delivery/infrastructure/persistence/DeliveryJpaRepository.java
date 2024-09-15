@@ -1,6 +1,6 @@
 package com.sparta.delivery.infrastructure.persistence;
 
-import com.sparta.delivery.domain.model.Delivery;
+import com.sparta.delivery.domain.delivery.model.Delivery;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

@@ -1,15 +1,19 @@
-package com.sparta.delivery.domain.model;
+package com.sparta.delivery.domain.delivery.model;
 
-import com.sparta.delivery.domain.model.enums.DeliveryStatus;
+import com.sparta.delivery.domain.delivery.model.enums.DeliveryStatus;
+import com.sparta.delivery.domain.route.domain.model.DeliveryRoute;
 import com.sparta.delivery.infrastructure.configuration.auditing.listener.SoftDeleteListener;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -41,26 +45,20 @@ public class Delivery {
     @Column(name = "status", length = 50)
     private DeliveryStatus status = DeliveryStatus.READY_FOR_DELIVERY;
 
-    @Column(name = "departure_hub_id")
-    private UUID departureHubId;
-
-    @Column(name = "destination_hub_id")
-    private UUID destinationHubId;
-
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
-    @Column(name = "latitude")
-    private Double latitude;
-
-    @Column(name = "longitude")
-    private Double longitude;
-
     @Column(name = "receiver_id")
-    private UUID receiverId;
+    private Long receiverId;
 
     @Column(name = "receiver_slack_id")
     private String receiverSlackId;
+
+    @OneToOne(mappedBy = "delivery", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private DeliveryRoute route;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
@@ -84,34 +82,30 @@ public class Delivery {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
-
-    public static Delivery create(UUID orderId,
-                                  UUID departureHubId, UUID destinationHubId,
-                                  String deliveryAddress, UUID receiverId) {
-        return new Delivery(null, orderId, departureHubId, destinationHubId, deliveryAddress, receiverId);
+    public static Delivery create(UUID orderId, String deliveryAddress, Long receiverId, String receiverSlackId) {
+        return new Delivery(orderId, deliveryAddress, receiverId, receiverSlackId);
     }
 
-    private Delivery(UUID deliveryId, UUID orderId,
-                     UUID departureHubId, UUID destinationHubId,
-                     String deliveryAddress, UUID receiverId) {
-        this.deliveryId = deliveryId;
+    private Delivery(UUID orderId, String deliveryAddress, Long receiverId, String receiverSlackId) {
         this.orderId = orderId;
-        this.departureHubId = departureHubId;
-        this.destinationHubId = destinationHubId;
         this.deliveryAddress = deliveryAddress;
         this.receiverId = receiverId;
+        this.receiverSlackId = receiverSlackId;
+    }
+
+    public void setRoute(DeliveryRoute route) {
+        this.route = route;
+        if (route != null && route.getDelivery() != this) {
+            route.setDelivery(this);
+        }
     }
 
     public void updateStatus(DeliveryStatus newStatus) {
         this.status = newStatus;
     }
 
-    public void updateDelivery(UUID departureHubId, UUID destinationHubId, String deliveryAddress,
-                               UUID receiverId, String receiverSlackId) {
-        this.departureHubId = departureHubId;
-        this.destinationHubId = destinationHubId;
+    public void updateDeliveryInfo(UUID orderId, String deliveryAddress, Long receiverId, String receiverSlackId) {
+        this.orderId = orderId;
         this.deliveryAddress = deliveryAddress;
         this.receiverId = receiverId;
         this.receiverSlackId = receiverSlackId;
