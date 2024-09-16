@@ -69,7 +69,8 @@ public class SecurityConfig {
                         .pathMatchers("/api/v1/user/signIn").permitAll()
                         .pathMatchers("/swagger-ui/**").permitAll()
                         .pathMatchers("/api/v1/user/docs").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/api/v1/user/admin","/api/v1/user/search").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.GET, "/api/v1/user/admin").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.GET, "/api/v1/user/search").hasRole("MASTER")
                         .pathMatchers(HttpMethod.DELETE, "/api/v1/user/admin").hasRole("MASTER")
                         .pathMatchers("/api/v1/user/**").authenticated()
 

@@ -39,12 +39,13 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> getAllUsers(
             @RequestHeader(value = "User-Email") String userEmail,
+            @RequestHeader(value = "User-Role") String userRole,
             @PageableDefault() Pageable pageable
     ) {
         Pageable modifiedPageable = PageableUtils.applyPageSizeLimit(pageable);
         modifiedPageable = PageableUtils.applyDefaultSortIfNecessary(modifiedPageable);
 
-        if (!Objects.equals(userService.findUserByEmail(userEmail).getRole(), "MASTER")) {
+        if (!Objects.equals(userRole, "MASTER")) {
             return ResponseEntity.ok().body(userService.getUser(userEmail));
         }
         Page<UserResponse> usersPage = userService.getAllUsers(modifiedPageable);
