@@ -23,4 +23,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             "WHERE o.orderId = :orderId")
     void deleteOrderById(@Param("orderId") UUID orderId, @Param("deletedAt") LocalDateTime deletedAt,
                          @Param("deletedBy") Long deletedBy);
+
+    Page<Order> findAllByCreateByAndIsDeletedFalse(Long userId, Pageable pageable);
 }

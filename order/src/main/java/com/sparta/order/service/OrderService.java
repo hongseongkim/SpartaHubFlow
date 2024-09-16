@@ -10,6 +10,7 @@ import com.sparta.order.domain.dto.ProductDto;
 import com.sparta.order.domain.entity.Order;
 import com.sparta.order.domain.entity.OrderStatusEnum;
 import com.sparta.order.repository.OrderRepository;
+import jakarta.ws.rs.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -32,7 +33,7 @@ public class OrderService {
     private final DeliveryClient deliveryClient;
 
     @Transactional
-    public OrderDto.Response createOrder(OrderDto.Create orderDto) {
+    public OrderDto.Response createOrder(Long userId, OrderDto.Create orderDto) {
 
         ProductDto.Response productDto = productClient.getProductById(orderDto.getProductId());
 
@@ -40,14 +41,14 @@ public class OrderService {
             throw new IllegalArgumentException("존재하지 않는 상품입니다.");
         }
 
-        if (productDto.getStock() - orderDto.getQuantity() < 0){
+        if (productDto.getStock() - orderDto.getQuantity() < 0) {
             throw new RuntimeException("재고가 충분하지 않습니다.");
         }
 
         CompanyDto.Response DepartureCompanyDto = companyClient.getCompany(orderDto.getDepartureCompanyId());
         CompanyDto.Response DestinationCompanyDto = companyClient.getCompany(orderDto.getDestinationCompanyId());
 
-        if(DepartureCompanyDto == null || DestinationCompanyDto == null){
+        if (DepartureCompanyDto == null || DestinationCompanyDto == null) {
             throw new IllegalArgumentException("존재하지 않는 업체입니다.");
         }
 
@@ -61,18 +62,21 @@ public class OrderService {
                 orderDto.getOrderStatus()
         ));
 
+        order.setCreateBy(userId);
+        order.setCreatedAt(LocalDateTime.now());
+
         // 배송 생성
         deliveryClient.createDelivery(DeliveryDto.Create.builder()
-                        .orderId(order.getOrderId())
-                        .departureHubId(departureHubId)
-                        .destinationHubId(destinationHubId)
-                        .deliveryAddress(orderDto.getDeliveryAddress())
-                        .receiverId(orderDto.getReceiverId())
-                        .build()
+                .orderId(order.getOrderId())
+                .departureHubId(departureHubId)
+                .destinationHubId(destinationHubId)
+                .deliveryAddress(orderDto.getDeliveryAddress())
+                .receiverId(orderDto.getReceiverId())
+                .build()
         );
 
         // 주문 생성 시 재고 감소
-        if(order.getOrderStatus() == OrderStatusEnum.DELIVERING){
+        if (order.getOrderStatus() == OrderStatusEnum.DELIVERING) {
             productClient.modifyProduct(productDto.getProductId(),
                     ProductDto.Modify.builder()
                             .productName(productDto.getProductName())
@@ -89,31 +93,45 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderDto.Response getOrder(UUID orderId) {
+    public OrderDto.Response getOrder(Long userId, String userRole, UUID orderId) {
         Order order = orderRepository.findByIdNotDeleted(orderId);
 
         if (order == null) {
             throw new IllegalArgumentException("존재하지 않는 주문입니다.");
         }
 
+        // MASTER 권한을 갖지 않은 경우 타인의 주문 조회 불가
+        if (!userRole.equals("MASTER") && !order.getCreateBy().equals(userId)) {
+            throw new ForbiddenException("권한이 없습니다.");
+        }
+
         return OrderDto.Response.of(order);
     }
 
     @Transactional(readOnly = true)
-    public List<OrderDto.GetAllOrdersResponse> getAllOrders(int page, int size, String sortBy) {
+    public List<OrderDto.GetAllOrdersResponse> getAllOrders(Long userId, String userRole, int page, int size, String sortBy) {
 
         Sort.Direction direction = Sort.Direction.ASC;
         Sort sort = Sort.by(direction, sortBy);
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Order> productList = orderRepository.findAllByIsDeletedFalse(pageable);
+        Page<Order> orderList;
 
-        return productList.map(OrderDto.GetAllOrdersResponse::new).stream().toList();
+        if (userRole.equals("MASTER")) {
+            orderList = orderRepository.findAllByIsDeletedFalse(pageable);
+        }
+
+        // MASTER 권한을 갖지 않은 경우 자신의 주문만 조회 가능
+        else {
+            orderList = orderRepository.findAllByCreateByAndIsDeletedFalse(userId, pageable);
+        }
+
+        return orderList.map(OrderDto.GetAllOrdersResponse::new).stream().toList();
 
     }
 
     @Transactional
-    public OrderDto.Response modifyOrder(UUID orderId, OrderDto.Modify orderDto) {
+    public OrderDto.Response modifyOrder(Long userId, String userRole, UUID orderId, OrderDto.Modify orderDto) {
 
         Order order = orderRepository.findByIdNotDeleted(orderId);
 
@@ -127,9 +145,13 @@ public class OrderService {
             throw new IllegalArgumentException("존재하지 않는 상품입니다.");
         }
 
+        // MASTER 권한을 갖지 않은 경우 타인의 주문 수정 불가
+        if (!userRole.equals("MASTER") && !order.getCreateBy().equals(userId)) {
+            throw new ForbiddenException("권한이 없습니다.");
+        }
 
         // 해당 주문이 취소됨 상태가 아닐 때 취소된 경우
-        if(order.getOrderStatus() != OrderStatusEnum.CANCELED && orderDto.getOrderStatus() == OrderStatusEnum.CANCELED){
+        if (order.getOrderStatus() != OrderStatusEnum.CANCELED && orderDto.getOrderStatus() == OrderStatusEnum.CANCELED) {
 
             // 재고 복구
             productClient.modifyProduct(order.getProductId(),
@@ -153,10 +175,17 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderDto.DeleteResponse deleteOrder(UUID orderId, OrderDto.Delete orderDto) {
+    public OrderDto.DeleteResponse deleteOrder(Long userId, String userRole, UUID orderId, OrderDto.Delete orderDto) {
 
-        if (orderRepository.findByIdNotDeleted(orderId) == null) {
+        Order order = orderRepository.findByIdNotDeleted(orderId);
+
+        if (order == null) {
             throw new IllegalArgumentException("존재하지 않는 주문입니다.");
+        }
+
+        // MASTER 권한을 갖지 않은 경우 타인의 주문 삭제 불가
+        if (!userRole.equals("MASTER") && !order.getCreateBy().equals(userId)) {
+            throw new ForbiddenException("권한이 없습니다.");
         }
 
         orderRepository.deleteOrderById(orderId, LocalDateTime.now(), orderDto.getUserIdToDelete());
