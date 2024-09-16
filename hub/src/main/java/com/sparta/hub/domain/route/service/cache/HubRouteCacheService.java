@@ -2,7 +2,6 @@ package com.sparta.hub.domain.route.service.cache;
 
 import com.sparta.hub.application.exception.ErrorCode;
 import com.sparta.hub.application.exception.ServiceException;
-import com.sparta.hub.domain.route.dto.HubRoutePatchDto;
 import com.sparta.hub.domain.route.model.HubRoute;
 import com.sparta.hub.infrastructure.persistence.HubRouteRepository;
 import java.util.List;
@@ -47,6 +46,12 @@ public class HubRouteCacheService {
     @Transactional(readOnly = true)
     public List<HubRoute> getHubRoutesByDestination(UUID destinationHubId) {
         return hubRouteJpaRepository.findByDestinationHubIdAndIsDeletedFalse(destinationHubId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
+    }
+
+    @Transactional(readOnly = true)
+    public HubRoute getHubRoutesByOriginAndDestination (UUID originHubId, UUID destinationHubId) {
+        return hubRouteJpaRepository.findByOriginHubIdAndDestinationHubIdAndIsDeletedFalse(originHubId, destinationHubId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.HUB_ROUTE_NOT_FOUND));
     }
 

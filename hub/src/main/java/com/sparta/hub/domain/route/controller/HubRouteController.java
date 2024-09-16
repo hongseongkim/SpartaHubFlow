@@ -14,7 +14,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -107,6 +109,19 @@ public class HubRouteController {
         return ResponseEntity.ok(HubRouteResponseDto.from(hubRoute));
     }
 
+    @GetMapping("/{originHubId}/{destinationHubId}")
+    @Operation(summary = "특정 허브 경로 조회", description = "출발 허브 ID와 도착 허브 ID로 허브 경로 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "허브 경로 조회 성공"),
+            @ApiResponse(responseCode = "404", description = "허브 경로를 찾을 수 없음")
+    })
+    public ResponseEntity<HubRouteResponseDto> getRoute(@PathVariable UUID originHubId, @PathVariable UUID destinationHubId) {
+
+        HubRoute hubRoute = hubRouteService.getHubRouteByOriginAndDestination(originHubId, destinationHubId);
+
+        return ResponseEntity.ok(HubRouteResponseDto.from(hubRoute));
+    }
+
     @GetMapping("/origin/{originHubId}")
     @Operation(summary = "출발지 허브 기준 경로 조회", description = "특정 출발지 허브에서 시작하는 모든 허브 경로를 조회합니다.")
     @ApiResponses(value = {
@@ -154,4 +169,6 @@ public class HubRouteController {
 
         return ResponseEntity.ok(hubRoutes.map(HubRouteResponseDto::from));
     }
+
+
 }
