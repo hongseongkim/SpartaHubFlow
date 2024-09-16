@@ -1,7 +1,7 @@
 package com.sparta.delivery.infrastructure.configuration.auditing.listener;
 
 import com.sparta.delivery.domain.delivery.model.Delivery;
-import com.sparta.delivery.domain.route.domain.model.DeliveryRoute;
+import com.sparta.delivery.domain.delivery.model.DeliveryRoute;
 import jakarta.persistence.PreUpdate;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;

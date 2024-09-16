@@ -1,4 +1,4 @@
-package com.sparta.delivery.domain.route.domain.dto;
+package com.sparta.delivery.domain.delivery.dto.route;
 
 import lombok.Getter;
 

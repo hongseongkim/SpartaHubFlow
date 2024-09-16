@@ -1,7 +1,6 @@
 package com.sparta.delivery.domain.delivery.model;
 
 import com.sparta.delivery.domain.delivery.model.enums.DeliveryStatus;
-import com.sparta.delivery.domain.route.domain.model.DeliveryRoute;
 import com.sparta.delivery.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

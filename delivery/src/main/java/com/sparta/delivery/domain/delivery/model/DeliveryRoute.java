@@ -1,6 +1,5 @@
-package com.sparta.delivery.domain.route.domain.model;
+package com.sparta.delivery.domain.delivery.model;
 
-import com.sparta.delivery.domain.delivery.model.Delivery;
 import com.sparta.delivery.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.*;
 import java.util.List;
@@ -101,17 +100,14 @@ public class DeliveryRoute {
         return route;
     }
 
-    public void updateRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId,
-                            Integer estimatedTime, Double estimatedDistance, List<UUID> routeSegments) {
+    public void updateRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId) {
         this.hubRouteId = hubRouteId;
         this.originHubId = originHubId;
         this.destinationHubId = destinationHubId;
-        this.estimatedTime = estimatedTime;
-        this.estimatedDistance = estimatedDistance;
-        this.routeSegments = routeSegments;
     }
 
-    public void updateRouteInfo(Double estimatedDistance, List<UUID> routeSegments) {
+    public void updateRouteInfo(Integer estimatedTime, Double estimatedDistance, List<UUID> routeSegments) {
+        this.estimatedTime = estimatedTime;
         this.estimatedDistance = estimatedDistance;
         this.routeSegments = routeSegments;
     }

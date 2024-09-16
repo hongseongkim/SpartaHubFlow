@@ -1,14 +1,14 @@
 package com.sparta.delivery.domain.delivery.service;
 
-import com.sparta.delivery.domain.delivery.dto.DeliveryDto;
-import com.sparta.delivery.domain.delivery.dto.DeliveryRequestDto;
+import com.sparta.delivery.domain.delivery.dto.delivery.DeliveryRequestDto;
+import com.sparta.delivery.domain.delivery.dto.delivery.DeliveryResponseDto;
 import com.sparta.delivery.domain.delivery.model.Delivery;
 import com.sparta.delivery.domain.delivery.model.enums.DeliveryStatus;
-import com.sparta.delivery.domain.route.domain.dto.DeliveryPersonRequestDto;
-import com.sparta.delivery.domain.route.domain.dto.DeliveryRouteDto;
-import com.sparta.delivery.domain.route.domain.dto.DeliveryRouteRequestDto;
-import com.sparta.delivery.domain.route.domain.model.DeliveryRoute;
-import com.sparta.delivery.domain.route.hub.HubRouteResponseDto;
+import com.sparta.delivery.domain.delivery.dto.route.DeliveryPersonRequestDto;
+import com.sparta.delivery.domain.delivery.dto.route.DeliveryRouteDto;
+import com.sparta.delivery.domain.delivery.dto.route.DeliveryRouteRequestDto;
+import com.sparta.delivery.domain.delivery.model.DeliveryRoute;
+import com.sparta.delivery.domain.delivery.dto.hub.HubRouteResponseDto;
 import com.sparta.delivery.infrastructure.client.HubFeignClient;
 import com.sparta.delivery.infrastructure.persistence.DeliveryJpaRepository;
 import com.sparta.delivery.infrastructure.persistence.DeliveryRouteJpaRepository;
@@ -33,7 +33,7 @@ public class DeliveryService {
     private final HubFeignClient hubFeignClient;
 
     @Transactional
-    public DeliveryDto createDelivery(DeliveryRequestDto deliveryRequestDto) {
+    public DeliveryResponseDto createDelivery(DeliveryRequestDto deliveryRequestDto) {
         log.info("Creating new delivery for order: {}", deliveryRequestDto.getOrderId());
 
         try {
@@ -44,7 +44,7 @@ public class DeliveryService {
             delivery = deliveryJpaRepository.save(delivery);
 
             log.info("Delivery created successfully with ID: {}", delivery.getDeliveryId());
-            return DeliveryDto.from(delivery, route);
+            return DeliveryResponseDto.from(delivery, route);
         } catch (Exception e) {
             log.error("Failed to create delivery: {}", e.getMessage());
             throw new ServiceException("Failed to create delivery", e);
@@ -67,11 +67,7 @@ public class DeliveryService {
         UUID destinationHubId = deliveryRequestDto.getDestinationHubId();
 
         try {
-            HubRouteResponseDto hubRouteDto = hubFeignClient.getHubRoutesByOrigin(originHubId)
-                    .stream()
-                    .filter(route -> route.getDestinationHubId().equals(destinationHubId))
-                    .findFirst()
-                    .orElseThrow(() -> new EntityNotFoundException("Hub route not found"));
+            HubRouteResponseDto hubRouteDto = hubFeignClient.getRoute(originHubId, destinationHubId);
 
             DeliveryRoute route = DeliveryRoute.create(
                     hubRouteDto.getHubRouteId(),
@@ -82,10 +78,11 @@ public class DeliveryService {
                     hubRouteDto.getRouteSegments()
             );
             route.setDelivery(delivery);
-
             DeliveryRoute savedRoute = deliveryRouteJpaRepository.save(route);
+
             log.info("DeliveryRoute saved successfully with ID: {}", savedRoute.getDeliveryRouteId());
             return savedRoute;
+
         } catch (FeignException e) {
             log.error("Error calling hub service: {}", e.getMessage());
             throw new ServiceException("Failed to get hub route information", e);
@@ -96,9 +93,8 @@ public class DeliveryService {
     }
 
     @Transactional
-    public DeliveryDto updateDelivery(UUID deliveryId, DeliveryRequestDto deliveryRequestDto) {
-        Delivery delivery = deliveryJpaRepository.findByDeliveryIdAndIsDeletedFalse(deliveryId)
-                .orElseThrow(() -> new EntityNotFoundException("Delivery not found"));
+    public DeliveryResponseDto updateDelivery(UUID deliveryId, DeliveryRequestDto deliveryRequestDto) {
+        Delivery delivery = getDeliveryEntity(deliveryId);
 
         delivery.updateDeliveryInfo(
                 deliveryRequestDto.getOrderId(),
@@ -108,28 +104,38 @@ public class DeliveryService {
 
         deliveryJpaRepository.save(delivery);
 
-        return DeliveryDto.from(delivery);
+        log.info("Delivery updated successfully: {}", deliveryId);
+
+        return DeliveryResponseDto.from(delivery, delivery.getRoute());
     }
 
     @Transactional
-    public void updateDeliveryRoute(UUID routeId, DeliveryRouteRequestDto requestDto) {
-        DeliveryRoute route = deliveryRouteJpaRepository.findById(routeId)
-                .orElseThrow(() -> new EntityNotFoundException("DeliveryRoute not found"));
+    public DeliveryRouteDto updateDeliveryRoute(UUID deliveryId, DeliveryRouteRequestDto requestDto) {
+
+        Delivery delivery = getDeliveryEntity(deliveryId);
+        DeliveryRoute deliveryRoute = getDeliveryRouteEntity(delivery.getRoute().getDeliveryRouteId());
 
         try {
-            HubRouteResponseDto hubRouteDto = hubFeignClient.getHubRoute(route.getHubRouteId());
+            HubRouteResponseDto hubRouteDto =
+                    hubFeignClient.getRoute(requestDto.getOriginHubId(), requestDto.getDestinationHubId());
 
-            route.updateRoute(
+            deliveryRoute.updateRoute(
                     hubRouteDto.getHubRouteId(),
-                    requestDto.getOriginHubId(),
-                    requestDto.getDestinationHubId(),
+                    hubRouteDto.getOriginHubId(),
+                    hubRouteDto.getDestinationHubId()
+            );
+
+            deliveryRoute.updateRouteInfo(
                     hubRouteDto.getEstimatedTime(),
                     hubRouteDto.getEstimatedDistance(),
                     hubRouteDto.getRouteSegments()
             );
 
-            deliveryRouteJpaRepository.save(route);
-            log.info("DeliveryRoute updated successfully: {}", routeId);
+            deliveryRouteJpaRepository.save(deliveryRoute);
+            log.info("DeliveryRoute updated successfully: {}", delivery.getRoute().getDeliveryRouteId());
+
+            return DeliveryRouteDto.from(deliveryRoute);
+
         } catch (FeignException e) {
             log.error("Error fetching hub route information: {}", e.getMessage());
             throw new ServiceException("Failed to fetch hub route information", e);
@@ -138,63 +144,75 @@ public class DeliveryService {
 
     @Transactional
     public void deleteDelivery(UUID deliveryId) {
-        Delivery delivery = deliveryJpaRepository.findByDeliveryIdAndIsDeletedFalse(deliveryId)
-                .orElseThrow(() -> new EntityNotFoundException("Delivery not found with ID: " + deliveryId));
+        Delivery delivery = getDeliveryEntity(deliveryId);
         delivery.softDelete();
         deliveryJpaRepository.save(delivery);
     }
 
     @Transactional
-    public void deleteDeliveryRoute(UUID routeId) {
-        DeliveryRoute route = deliveryRouteJpaRepository.findById(routeId)
-                .orElseThrow(() -> new EntityNotFoundException("DeliveryRoute not found"));
+    public void deleteDeliveryRoute(UUID deliveryId) {
+        DeliveryRoute route = getDeliveryEntity(deliveryId).getRoute();
         route.softDelete();
         deliveryRouteJpaRepository.save(route);
     }
 
     @Transactional(readOnly = true)
-    public DeliveryDto getDelivery(UUID deliveryId) {
-        return deliveryJpaRepository.findByDeliveryIdAndIsDeletedFalse(deliveryId)
-                .map(DeliveryDto::from)
-                .orElseThrow(() -> new EntityNotFoundException("Delivery not found with ID: " + deliveryId));
+    public DeliveryResponseDto getDelivery(UUID deliveryId) {
+
+        return DeliveryResponseDto.from(getDeliveryEntity(deliveryId), getDeliveryEntity(deliveryId).getRoute());
     }
 
     @Transactional(readOnly = true)
-    public List<DeliveryDto> getAllDeliveries() {
-        return deliveryJpaRepository.findAllByIsDeletedFalse().stream()
-                .map(DeliveryDto::from)
-                .collect(Collectors.toList());
+    public List<DeliveryResponseDto> getAllDeliveries() {
+
+       return getAllDeliveryEntities()
+               .stream()
+               .map(delivery -> DeliveryResponseDto.from(delivery, delivery.getRoute()))
+               .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<DeliveryRouteDto> getRoutesForDelivery(UUID deliveryId) {
-        List<DeliveryRoute> routes = deliveryRouteJpaRepository.findByDeliveryDeliveryIdAndIsDeletedFalse(deliveryId);
-        return routes.stream()
+
+        return getRoutesForDeliveryEntities(deliveryId)
+                .stream()
                 .map(DeliveryRouteDto::from)
                 .collect(Collectors.toList());
     }
 
-    @Transactional
-    public DeliveryDto assignDeliveryPerson(UUID deliveryId, UUID routeId, DeliveryPersonRequestDto deliveryPersonRequestDto) {
+    @Transactional(readOnly = true)
+    public Delivery getDeliveryEntity(UUID deliveryId) {
+        return deliveryJpaRepository.findByDeliveryIdAndIsDeletedFalse(deliveryId)
+                .orElseThrow(() -> new EntityNotFoundException("Delivery not found with ID: " + deliveryId));
+    }
 
-        DeliveryRoute route = deliveryRouteJpaRepository.findById(routeId)
-                .orElseThrow(() -> new EntityNotFoundException("DeliveryRoute not found"));
+    @Transactional(readOnly = true)
+    public List<Delivery> getAllDeliveryEntities() {
+        return deliveryJpaRepository.findAllByIsDeletedFalse();
+    }
 
-        route.assignDeliveryPerson(deliveryPersonRequestDto.getDeliveryPersonId(), deliveryPersonRequestDto.getDeliveryPersonSlackId());
-        deliveryRouteJpaRepository.save(route);
+    @Transactional(readOnly = true)
+    public DeliveryRoute getDeliveryRouteEntity(UUID routeId) {
+        return deliveryRouteJpaRepository.findById(routeId)
+                .orElseThrow(() -> new EntityNotFoundException("DeliveryRoute not found with ID: " + routeId));
+    }
 
-        Delivery delivery = updateDeliveryStatus(deliveryId, DeliveryStatus.ASSIGN_DELIVERY_PERSON);
-
-        return DeliveryDto.from(delivery, route);
+    @Transactional(readOnly = true)
+    public List<DeliveryRoute> getRoutesForDeliveryEntities(UUID deliveryId) {
+        return deliveryRouteJpaRepository.findByDeliveryDeliveryIdAndIsDeletedFalse(deliveryId);
     }
 
     @Transactional
-    public Delivery updateDeliveryStatus(UUID deliveryId, DeliveryStatus deliveryStatus) {
+    public DeliveryResponseDto assignDeliveryPerson(UUID deliveryId, DeliveryPersonRequestDto deliveryPersonRequestDto) {
 
-        Delivery delivery = deliveryJpaRepository.findByDeliveryIdAndIsDeletedFalse(deliveryId)
-                .orElseThrow(() -> new EntityNotFoundException("Delivery not found"));
+        Delivery delivery = getDeliveryEntity(deliveryId);
+        DeliveryRoute deliveryRoute = getDeliveryRouteEntity(delivery.getRoute().getDeliveryRouteId());
 
-        delivery.updateStatus(deliveryStatus);
-        return deliveryJpaRepository.save(delivery);
+        deliveryRoute.assignDeliveryPerson(deliveryPersonRequestDto.getDeliveryPersonId(), deliveryPersonRequestDto.getDeliveryPersonSlackId());
+        deliveryRouteJpaRepository.save(deliveryRoute);
+
+        delivery.updateStatus(DeliveryStatus.ASSIGN_DELIVERY_PERSON);
+
+        return DeliveryResponseDto.from(delivery, deliveryRoute);
     }
 }
