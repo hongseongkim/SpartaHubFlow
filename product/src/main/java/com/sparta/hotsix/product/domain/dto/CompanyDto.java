@@ -15,6 +15,7 @@ public interface CompanyDto {
         private final UUID hubId;
         private final Enum<?> companyType;
         private final String companyAddress;
+        private final Long companyMangerId;
 
     }
 }

@@ -19,8 +19,10 @@ public class ProductController {
 
     @PostMapping
     @Operation(summary = "상품 생성", description = "상품을 생성합니다.")
-    public ProductDto.Response createProduct(@RequestBody ProductDto.Create productDto) {
-        return productService.createProduct(productDto);
+    public ProductDto.Response createProduct(@RequestHeader("User-Id") Long userId,
+                                             @RequestHeader("User-Role") String userRole,
+                                             @RequestBody ProductDto.Create productDto) {
+        return productService.createProduct(userId, userRole, productDto);
     }
 
     @GetMapping("/{productId}")
@@ -58,16 +60,20 @@ public class ProductController {
 
     @PatchMapping("/{productId}")
     @Operation(summary = "상품 수정", description = "상품을 수정합니다.")
-    public ProductDto.Response modifyProduct(@PathVariable(value = "productId") UUID productId,
+    public ProductDto.Response modifyProduct(@RequestHeader("User-Id") Long userId,
+                                             @RequestHeader("User-Role") String userRole,
+                                             @PathVariable(value = "productId") UUID productId,
                                              @RequestBody ProductDto.Modify productDto) {
-        return productService.modifyProduct(productId, productDto);
+        return productService.modifyProduct(userId, userRole, productId, productDto);
     }
 
     @DeleteMapping("/{productId}")
     @Operation(summary = "상품 삭제", description = "상품을 삭제합니다.")
-    public ProductDto.DeleteResponse deleteProduct(@PathVariable(value = "productId") UUID productId,
+    public ProductDto.DeleteResponse deleteProduct(@RequestHeader("User-Id") Long userId,
+                                                   @RequestHeader("User-Role") String userRole,
+                                                   @PathVariable(value = "productId") UUID productId,
                                                    @RequestBody ProductDto.Delete productDto) {
-        return productService.deleteProduct(productId, productDto);
+        return productService.deleteProduct(userId, userRole, productId, productDto);
     }
 
 
