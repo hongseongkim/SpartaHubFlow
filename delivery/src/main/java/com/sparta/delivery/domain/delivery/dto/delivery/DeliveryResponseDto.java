@@ -1,6 +1,7 @@
 package com.sparta.delivery.domain.delivery.dto.delivery;
 
 import com.sparta.delivery.domain.delivery.model.Delivery;
+import com.sparta.delivery.domain.delivery.model.RouteSegment;
 import com.sparta.delivery.domain.delivery.model.enums.DeliveryStatus;
 import com.sparta.delivery.domain.delivery.model.DeliveryRoute;
 import java.util.List;
@@ -27,7 +28,7 @@ public class DeliveryResponseDto {
     private Integer estimatedTime;
     private Integer actualTime;
     private Double estimatedDistance;
-    private List<UUID> routeSegments;
+    private List<RouteSegment> routeSegments;
 
     public static DeliveryResponseDto from(Delivery delivery, DeliveryRoute route) {
         return DeliveryResponseDto.builder()

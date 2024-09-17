@@ -1,6 +1,7 @@
 package com.sparta.delivery.domain.delivery.dto.route;
 
 import com.sparta.delivery.domain.delivery.model.DeliveryRoute;
+import com.sparta.delivery.domain.delivery.model.RouteSegment;
 import jakarta.persistence.Column;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +21,7 @@ public class DeliveryRouteDto {
     private Integer estimatedTime;
     private Integer actualTime;
     private Double estimatedDistance;
-    private List<UUID> routeSegments;
+    private List<RouteSegment> routeSegments;
 
     public static DeliveryRouteDto from(DeliveryRoute route) {
         return DeliveryRouteDto.builder()
