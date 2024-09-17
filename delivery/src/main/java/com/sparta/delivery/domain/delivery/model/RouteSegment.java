@@ -1,5 +1,6 @@
 package com.sparta.delivery.domain.delivery.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -31,14 +32,9 @@ public class RouteSegment {
     @Column(name = "address")
     private String address;
 
-    @Column(name = "latitude")
-    private Double latitude;
-
-    @Column(name = "longitude")
-    private Double longitude;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_route_id")
+    @JsonBackReference
     private DeliveryRoute deliveryRoute;
 
     // 허브 경로일 경우 생성자
@@ -47,10 +43,8 @@ public class RouteSegment {
     }
 
     // 배송지 경로일 경우 생성자
-    public RouteSegment(String address, Double latitude, Double longitude) {
+    public RouteSegment(String address) {
         this.address = address;
-        this.latitude = latitude;
-        this.longitude = longitude;
     }
 
     public void updateDeliveryRoute(DeliveryRoute route) {

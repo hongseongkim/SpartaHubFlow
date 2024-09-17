@@ -1,5 +1,6 @@
 package com.sparta.delivery.domain.delivery.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sparta.delivery.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.*;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ public class DeliveryRoute {
     private Double estimatedDistance;
 
     @OneToMany(mappedBy = "deliveryRoute", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<RouteSegment> routeSegments = new ArrayList<>();
 
     @Column(name = "actual_time")
@@ -115,10 +117,6 @@ public class DeliveryRoute {
     public void updateRouteInfo(Integer estimatedTime, Double estimatedDistance) {
         this.estimatedTime = estimatedTime;
         this.estimatedDistance = estimatedDistance;
-    }
-
-    public void updateActualTime(Integer actualTime) {
-        this.actualTime = actualTime;
     }
 
     // 배송 시작 시간 설정
