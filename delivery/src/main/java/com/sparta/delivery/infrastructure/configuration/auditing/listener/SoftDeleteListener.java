@@ -1,6 +1,7 @@
 package com.sparta.delivery.infrastructure.configuration.auditing.listener;
 
 import com.sparta.delivery.domain.delivery.model.Delivery;
+import com.sparta.delivery.domain.delivery.model.DeliveryPerson;
 import com.sparta.delivery.domain.delivery.model.DeliveryRoute;
 import jakarta.persistence.PreUpdate;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +19,8 @@ public class SoftDeleteListener {
             handleSoftDelete(delivery);
         } else if (object instanceof DeliveryRoute deliveryRoute) {
             handleSoftDelete(deliveryRoute);
+        } else if ((object instanceof DeliveryPerson deliveryPerson)) {
+            handleSoftDelete(deliveryPerson);
         }
     }
 
@@ -30,6 +33,12 @@ public class SoftDeleteListener {
     private void handleSoftDelete(DeliveryRoute deliveryRoute) {
         if (deliveryRoute.getDeletedAt() != null && deliveryRoute.getDeletedBy() == null) {
             deliveryRoute.setDeletedBy(getCurrentAuditor().get());
+        }
+    }
+
+    private void handleSoftDelete(DeliveryPerson deliveryPerson) {
+        if (deliveryPerson.getDeletedAt() != null && deliveryPerson.getDeletedBy() == null) {
+            deliveryPerson.setDeletedBy(getCurrentAuditor().get());
         }
     }
 
