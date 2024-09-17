@@ -50,9 +50,7 @@ public class DeliveryRouteService {
 
             // 배송지 경로 추가
             RouteSegment deliverySegment = new RouteSegment(
-                    deliveryRequestDto.getDeliveryAddress(),
-                    deliveryRequestDto.getLatitude(),
-                    deliveryRequestDto.getLongitude()
+                    deliveryRequestDto.getDeliveryAddress()
             );
             deliverySegment.updateDeliveryRoute(route);
             route.getRouteSegments().add(deliverySegment);

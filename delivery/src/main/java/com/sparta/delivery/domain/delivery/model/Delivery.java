@@ -47,12 +47,6 @@ public class Delivery {
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
-    @Column(name = "latitude")
-    private Double latitude;
-
-    @Column(name = "longitude")
-    private Double longitude;
-
     @Column(name = "receiver_id")
     private Long receiverId;
 
