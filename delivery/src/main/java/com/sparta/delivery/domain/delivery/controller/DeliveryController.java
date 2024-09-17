@@ -80,9 +80,7 @@ public class DeliveryController {
             @ApiResponse(responseCode = "404", description = "배송을 찾을 수 없음")
     })
     @GetMapping("/{deliveryId}")
-    public ResponseEntity<DeliveryResponseDto> getDelivery(
-            @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = true) String userRole,
-            @Parameter(description = "조회할 배송 ID", required = true) @PathVariable UUID deliveryId) {
+    public ResponseEntity<DeliveryResponseDto> getDelivery(@Parameter(description = "조회할 배송 ID", required = true) @PathVariable UUID deliveryId) {
         return ResponseEntity.ok(deliveryService.getDelivery(deliveryId));
     }
 
@@ -91,8 +89,7 @@ public class DeliveryController {
             @ApiResponse(responseCode = "200", description = "배송 목록 조회 성공")
     })
     @GetMapping
-    public ResponseEntity<List<DeliveryResponseDto>> getAllDeliveries(
-            @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = true) String userRole) {
+    public ResponseEntity<List<DeliveryResponseDto>> getAllDeliveries() {
         return ResponseEntity.ok(deliveryService.getAllDeliveries());
     }
 
