@@ -6,16 +6,12 @@ import com.sparta.delivery.domain.delivery.service.DeliveryRouteService;
 import com.sparta.delivery.infrastructure.security.AuthorizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,10 +35,7 @@ public class DeliveryRouteController {
             @Parameter(description = "배송 경로를 수정할 배송 ID", required = true) @PathVariable UUID deliveryId,
             @Valid @RequestBody DeliveryRouteRequestDto requestDto) {
 
-        // 마스터 또는 허브 관리자 권한 검증
-        UUID hubId = getOriginHubId();
-        UUID userHubId = getUserHubId();
-        authorizationService.validateManagerOrMasterRole(userRole, hubId, userHubId);
+        authorizationService.validateMasterRole(userRole);
 
         return ResponseEntity.ok(deliveryRouteService.updateDeliveryRoute(deliveryId, requestDto));
     }
@@ -58,16 +51,6 @@ public class DeliveryRouteController {
 
         deliveryRouteService.deleteDeliveryRoute(deliveryId);
         return ResponseEntity.noContent().build();
-    }
-
-    private UUID getUserHubId() {
-        // TODO 실제 사용자 정보를 통해 허브 ID를 가져오는 로직을 구현
-        return UUID.randomUUID();
-    }
-
-    private UUID getOriginHubId() {
-        // TODO 실제 허브 ID를 가져오는 로직을 구현
-        return UUID.randomUUID();
     }
 }
 
