@@ -84,6 +84,8 @@ public class SecurityConfig {
                         .pathMatchers("/api/v1/products/**").hasRole("MASTER")
                         .pathMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
 
+                        .pathMatchers("/metrics/**").hasIpAddress("프로메테우스 서버 IP")
+
 
                         .anyExchange().authenticated())
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)

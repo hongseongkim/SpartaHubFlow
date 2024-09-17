@@ -50,3 +50,15 @@ springdoc:
   model-and-view-allowed: true
   paths-to-match:
     - /api/v1/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus # prometheus 엔드포인트 노출
+  metrics:
+    tags:
+      application: ${spring.application.name} # 애플리케이션 이름을 태그로 추가
+  endpoint:
+    prometheus:
+      enabled: true # prometheus 엔드포인트 활성화
