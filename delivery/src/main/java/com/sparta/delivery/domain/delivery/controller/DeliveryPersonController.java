@@ -6,8 +6,6 @@ import com.sparta.delivery.domain.delivery.service.DeliveryPersonService;
 import com.sparta.delivery.infrastructure.security.AuthorizationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -36,17 +34,9 @@ public class DeliveryPersonController {
             @Parameter(description = "배송 담당자를 할당할 배송 ID", required = true) @PathVariable UUID deliveryId,
             @Valid @RequestBody DeliveryPersonRequestDto requestDto) {
 
-        // 허브 관리자 또는 마스터 권한 검증
-        UUID hubId = requestDto.getHubId();
-        UUID userHubId = getUserHubId();
-        authorizationService.validateManagerOrMasterRole(userRole, hubId, userHubId);
+        authorizationService.validateMasterRole(userRole);
 
         return ResponseEntity.ok(deliveryPersonService.assignDeliveryPerson(deliveryId, requestDto));
-    }
-
-    private UUID getUserHubId() {
-        // TODO 실제 사용자 정보를 통해 허브 ID를 가져오는 로직을 구현
-        return UUID.randomUUID();
     }
 }
 

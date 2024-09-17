@@ -29,10 +29,7 @@ public class DeliveryStatusController {
             @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = true) String userRole,
             @Parameter(description = "배송을 시작할 배송 ID", required = true) @PathVariable UUID deliveryId) {
 
-        // 마스터 또는 허브 관리자 권한 검증
-        UUID hubId = getHubIdFromDelivery(deliveryId);
-        UUID userHubId = getUserHubId();
-        authorizationService.validateManagerOrMasterRole(userRole, hubId, userHubId);
+        authorizationService.validateMasterRole(userRole);
 
         deliveryStatusService.startDelivery(deliveryId);
         return ResponseEntity.ok().build();
@@ -44,23 +41,10 @@ public class DeliveryStatusController {
             @Parameter(description = "사용자 역할", required = true) @RequestHeader(value = "User-Role", required = true) String userRole,
             @Parameter(description = "배송을 완료할 배송 ID", required = true) @PathVariable UUID deliveryId) {
 
-        // 마스터 또는 허브 관리자 권한 검증
-        UUID hubId = getHubIdFromDelivery(deliveryId); // 배송에서 허브 ID 가져오기
-        UUID userHubId = getUserHubId(); // 사용자 허브 ID 가져오는 메서드
-        authorizationService.validateManagerOrMasterRole(userRole, hubId, userHubId);
+        authorizationService.validateMasterRole(userRole);
 
         deliveryStatusService.completeDelivery(deliveryId);
         return ResponseEntity.ok().build();
-    }
-
-    private UUID getHubIdFromDelivery(UUID deliveryId) {
-        // TODO  실제 배송 데이터를 통해 허브 ID를 가져오는 로직을 구현
-        return UUID.randomUUID();
-    }
-
-    private UUID getUserHubId() {
-        // TODO 실제 사용자 정보를 통해 허브 ID를 가져오는 로직을 구현
-        return UUID.randomUUID();
     }
 }
 
