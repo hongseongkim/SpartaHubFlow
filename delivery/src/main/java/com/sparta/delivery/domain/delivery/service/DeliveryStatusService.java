@@ -1,6 +1,8 @@
 package com.sparta.delivery.domain.delivery.service;
 
+import com.sparta.delivery.domain.delivery.model.Delivery;
 import com.sparta.delivery.domain.delivery.model.DeliveryRoute;
+import com.sparta.delivery.infrastructure.persistence.DeliveryJpaRepository;
 import com.sparta.delivery.infrastructure.persistence.DeliveryRouteJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.UUID;
@@ -14,29 +16,28 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DeliveryStatusService {
 
-    private final DeliveryRouteJpaRepository deliveryRouteJpaRepository;
+    private final DeliveryJpaRepository deliveryJpaRepository;
 
     @Transactional
     public void startDelivery(UUID deliveryId) {
-        DeliveryRoute deliveryRoute = getDeliveryRouteEntity(deliveryId);
-        deliveryRoute.startDelivery();
-        deliveryRouteJpaRepository.save(deliveryRoute);
+        Delivery delivery = getDeliveryRouteEntity(deliveryId);
+        delivery.startDelivery();
+        deliveryJpaRepository.save(delivery);
 
         log.info("배송이 시작되었습니다. Delivery ID: {}", deliveryId);
     }
 
     @Transactional
     public void completeDelivery(UUID deliveryId) {
-        DeliveryRoute deliveryRoute = getDeliveryRouteEntity(deliveryId);
-        deliveryRoute.completeDelivery();
-        deliveryRouteJpaRepository.save(deliveryRoute);
+        Delivery delivery = getDeliveryRouteEntity(deliveryId);
+        delivery.completeDelivery();
+        deliveryJpaRepository.save(delivery);
 
-        log.info("배송이 완료되었습니다. Delivery ID: {}, Actual Time: {} 분", deliveryId, deliveryRoute.getActualTime());
+        log.info("배송이 완료되었습니다. Delivery ID: {}, Actual Time: {} 분", deliveryId, delivery.getActualTime());
     }
 
-    private DeliveryRoute getDeliveryRouteEntity(UUID routeId) {
-        return deliveryRouteJpaRepository.findById(routeId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 DeliveryRoute를 찾을 수 없습니다: " + routeId));
+    private Delivery getDeliveryRouteEntity(UUID deliveryId) {
+        return deliveryJpaRepository.findById(deliveryId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 Delivery를 찾을 수 없습니다: " + deliveryId));
     }
-
 }

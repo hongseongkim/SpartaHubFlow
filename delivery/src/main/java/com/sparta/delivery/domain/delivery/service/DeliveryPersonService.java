@@ -2,10 +2,10 @@ package com.sparta.delivery.domain.delivery.service;
 
 import com.sparta.delivery.domain.delivery.dto.delivery.DeliveryResponseDto;
 import com.sparta.delivery.domain.delivery.dto.person.DeliveryPersonRequestDto;
+import com.sparta.delivery.domain.delivery.model.Delivery;
 import com.sparta.delivery.domain.delivery.model.DeliveryPerson;
-import com.sparta.delivery.domain.delivery.model.DeliveryRoute;
 import com.sparta.delivery.domain.delivery.model.enums.DeliveryPersonType;
-import com.sparta.delivery.infrastructure.persistence.DeliveryRouteJpaRepository;
+import com.sparta.delivery.infrastructure.persistence.DeliveryJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,46 +19,48 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class DeliveryPersonService {
 
-    private final DeliveryRouteJpaRepository deliveryRouteJpaRepository;
+    private final DeliveryJpaRepository deliveryJpaRepository;
 
     @Transactional
     public DeliveryResponseDto assignDeliveryPerson(UUID deliveryId, DeliveryPersonRequestDto deliveryPersonRequestDto) {
 
-        DeliveryRoute deliveryRoute = getDeliveryRouteEntity(deliveryId);
-        DeliveryPerson deliveryPerson = getDeliveryPersonEntity(deliveryPersonRequestDto);
+        Delivery delivery = getDeliveryEntity(deliveryId);
+        DeliveryPerson deliveryPerson = getDeliveryPersonEntity(delivery, deliveryPersonRequestDto);
 
         if (deliveryPerson.getType() == DeliveryPersonType.HUB_MOVEMENT) {
-            if (!isHubToHubTransfer(deliveryRoute)) {
+            if (!isHubToHubTransfer(delivery)) {
                 throw new ServiceException("허브 이동 담당자는 업체 배송을 할 수 없습니다.");
             }
-        } else if (deliveryPerson.getType() == DeliveryPersonType.COMPANY_DELIVERY && isHubToHubTransfer(deliveryRoute)) {
+        } else if (deliveryPerson.getType() == DeliveryPersonType.COMPANY_DELIVERY && isHubToHubTransfer(delivery)) {
             throw new ServiceException("업체 배송 담당자는 허브 간 이동을 할 수 없습니다.");
         }
 
-        deliveryRoute.assignDeliveryPerson(deliveryPerson.getDeliveryPersonId(), deliveryPerson.getSlackId());
-        deliveryRouteJpaRepository.save(deliveryRoute);
+        delivery.updateDeliveryPerson(deliveryPerson);
+        deliveryJpaRepository.save(delivery);
 
         log.info("배송 담당자가 할당되었습니다: {}", deliveryPerson.getDeliveryPersonId());
-        return DeliveryResponseDto.from(deliveryRoute.getDelivery(), deliveryRoute);
+        return DeliveryResponseDto.from(delivery, delivery.getRoute());
     }
 
-    private boolean isHubToHubTransfer(DeliveryRoute deliveryRoute) {
-        return deliveryRoute.getRouteSegments().stream()
+    private boolean isHubToHubTransfer(Delivery delivery) {
+
+        return delivery.getRoute().getRouteSegments().stream()
                 .allMatch(segment -> segment.getHubId() != null && segment.getAddress() == null);
     }
 
-    private DeliveryPerson getDeliveryPersonEntity(DeliveryPersonRequestDto deliveryPersonRequestDto) {
+    private DeliveryPerson getDeliveryPersonEntity(Delivery delivery, DeliveryPersonRequestDto deliveryPersonRequestDto) {
         // TODO: 실제 배송 담당자 정보를 조회하는 로직 추가
         return DeliveryPerson.create(
                 deliveryPersonRequestDto.getUserId(),
-                deliveryPersonRequestDto.getHubId(),
                 deliveryPersonRequestDto.getDeliveryPersonSlackId(),
-                deliveryPersonRequestDto.getDeliveryPersonType()
+                deliveryPersonRequestDto.getDeliveryPersonType(),
+                delivery
         );
     }
 
-    private DeliveryRoute getDeliveryRouteEntity(UUID routeId) {
-        return deliveryRouteJpaRepository.findById(routeId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 ID의 DeliveryRoute를 찾을 수 없습니다: " + routeId));
+    private Delivery getDeliveryEntity(UUID deliveryId) {
+        return deliveryJpaRepository.findByDeliveryIdAndIsDeletedFalse(deliveryId).orElseThrow(
+                EntityNotFoundException::new
+        );
     }
 }

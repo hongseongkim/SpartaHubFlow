@@ -1,5 +1,7 @@
 package com.sparta.delivery.domain.delivery.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sparta.delivery.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.*;
@@ -34,6 +36,7 @@ public class DeliveryRoute {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_id")
+    @JsonBackReference
     private Delivery delivery;
 
     @Column(name = "origin_hub_id")
@@ -41,12 +44,6 @@ public class DeliveryRoute {
 
     @Column(name = "destination_hub_id")
     private UUID destinationHubId;
-
-    @Column(name = "delivery_person_id")
-    private Long deliveryPersonId;
-
-    @Column(name = "delivery_person_slack_id")
-    private String deliveryPersonSlackId;
 
     @Column(name = "estimated_time")
     private Integer estimatedTime;
@@ -58,37 +55,34 @@ public class DeliveryRoute {
     @JsonManagedReference
     private List<RouteSegment> routeSegments = new ArrayList<>();
 
-    @Column(name = "actual_time")
-    private Integer actualTime;
-
-    @Column(name = "delivery_start_time")
-    private LocalDateTime deliveryStartTime;
-
-    @Column(name = "delivery_end_time")
-    private LocalDateTime deliveryEndTime;
-
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    @JsonIgnore
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @JsonIgnore
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @JsonIgnore
     @CreatedBy
     @Column(name = "created_by", updatable = false)
     private String createdBy;
 
+    @JsonIgnore
     @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
 
+    @JsonIgnore
     @Column(name = "deleted_by")
     private String deletedBy;
 
@@ -117,29 +111,6 @@ public class DeliveryRoute {
     public void updateRouteInfo(Integer estimatedTime, Double estimatedDistance) {
         this.estimatedTime = estimatedTime;
         this.estimatedDistance = estimatedDistance;
-    }
-
-    // 배송 시작 시간 설정
-    public void startDelivery() {
-        this.deliveryStartTime = LocalDateTime.now();
-    }
-
-    // 배송 완료 시 실제 소요 시간을 계산하는 메소드
-    public void completeDelivery() {
-        this.deliveryEndTime = LocalDateTime.now();
-        calculateActualTime();
-    }
-
-    // 실제 소요 시간을 계산하는 메소드
-    private void calculateActualTime() {
-        if (this.deliveryStartTime != null && this.deliveryEndTime != null) {
-            this.actualTime = Math.toIntExact(java.time.Duration.between(deliveryStartTime, deliveryEndTime).toMinutes()); // 분 단위로 시간 계산
-        }
-    }
-
-    public void assignDeliveryPerson(Long deliveryPersonId, String deliveryPersonSlackId) {
-        this.deliveryPersonId = deliveryPersonId;
-        this.deliveryPersonSlackId = deliveryPersonSlackId;
     }
 
     public void softDelete() {

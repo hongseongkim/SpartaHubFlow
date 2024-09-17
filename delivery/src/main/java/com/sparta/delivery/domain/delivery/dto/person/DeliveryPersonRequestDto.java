@@ -8,6 +8,5 @@ import lombok.Getter;
 public class DeliveryPersonRequestDto {
     private Long userId;
     private String deliveryPersonSlackId;
-    private UUID hubId;
     private DeliveryPersonType deliveryPersonType;
 }
