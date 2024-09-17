@@ -1,8 +1,11 @@
-package com.sparta.delivery.domain.route.domain.model;
+package com.sparta.delivery.domain.delivery.model;
 
-import com.sparta.delivery.domain.delivery.model.Delivery;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sparta.delivery.infrastructure.configuration.auditing.listener.SoftDeleteListener;
 import jakarta.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -33,6 +36,7 @@ public class DeliveryRoute {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_id")
+    @JsonBackReference
     private Delivery delivery;
 
     @Column(name = "origin_hub_id")
@@ -41,48 +45,44 @@ public class DeliveryRoute {
     @Column(name = "destination_hub_id")
     private UUID destinationHubId;
 
-    @Column(name = "delivery_person_id")
-    private Long deliveryPersonId;
-
-    @Column(name = "delivery_person_slack_id")
-    private String deliveryPersonSlackId;
-
     @Column(name = "estimated_time")
     private Integer estimatedTime;
 
     @Column(name = "estimated_distance")
     private Double estimatedDistance;
 
-    @ElementCollection
-    @CollectionTable(name = "p_delivery_route_segments", joinColumns = @JoinColumn(name = "delivery_route_id"))
-    @Column(name = "hub_id")
-    private List<UUID> routeSegments;
-
-    @Column(name = "actual_time")
-    private Integer actualTime;
+    @OneToMany(mappedBy = "deliveryRoute", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<RouteSegment> routeSegments = new ArrayList<>();
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    @JsonIgnore
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @JsonIgnore
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonIgnore
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @JsonIgnore
     @CreatedBy
     @Column(name = "created_by", updatable = false)
     private String createdBy;
 
+    @JsonIgnore
     @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
 
+    @JsonIgnore
     @Column(name = "deleted_by")
     private String deletedBy;
 
@@ -93,7 +93,7 @@ public class DeliveryRoute {
     }
 
     public static DeliveryRoute create(UUID hubRouteId, UUID originHubId, UUID destinationHubId,
-                                       Integer estimatedTime, Double estimatedDistance, List<UUID> routeSegments) {
+                                       Integer estimatedTime, Double estimatedDistance, List<RouteSegment> routeSegments) {
         DeliveryRoute route = new DeliveryRoute(hubRouteId, originHubId, destinationHubId);
         route.estimatedTime = estimatedTime;
         route.estimatedDistance = estimatedDistance;
@@ -101,34 +101,16 @@ public class DeliveryRoute {
         return route;
     }
 
-    public void updateRoute(UUID hubRouteId, UUID originHubId, UUID destinationHubId,
-                            Integer estimatedTime, Double estimatedDistance, List<UUID> routeSegments) {
-        this.hubRouteId = hubRouteId;
-        this.originHubId = originHubId;
-        this.destinationHubId = destinationHubId;
-        this.estimatedTime = estimatedTime;
-        this.estimatedDistance = estimatedDistance;
-        this.routeSegments = routeSegments;
-    }
-
-    public void updateRouteInfo(Double estimatedDistance, List<UUID> routeSegments) {
-        this.estimatedDistance = estimatedDistance;
-        this.routeSegments = routeSegments;
-    }
-
-    public void updateActualTime(Integer actualTime) {
-        this.actualTime = actualTime;
-    }
-    public void setDelivery(Delivery delivery) {
+    public void updateDelivery(Delivery delivery) {
         this.delivery = delivery;
         if (delivery != null && delivery.getRoute() != this) {
-            delivery.setRoute(this);
+            delivery.updateRoute(this);
         }
     }
 
-    public void assignDeliveryPerson(Long deliveryPersonId, String deliveryPersonSlackId) {
-        this.deliveryPersonId = deliveryPersonId;
-        this.deliveryPersonSlackId = deliveryPersonSlackId;
+    public void updateRouteInfo(Integer estimatedTime, Double estimatedDistance) {
+        this.estimatedTime = estimatedTime;
+        this.estimatedDistance = estimatedDistance;
     }
 
     public void softDelete() {

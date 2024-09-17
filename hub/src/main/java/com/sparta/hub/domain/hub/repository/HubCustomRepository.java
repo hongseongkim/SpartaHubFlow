@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface HubCustomRepository {
     long countByIsDeletedFalse();
     Hub findByIdAndIsDeletedFalse(UUID id);
+    List<Hub> findByIdsAndIsDeletedFalse(List<UUID> hubIds);
     List<Hub> findAllByIsDeletedFalse();
     Page<Hub> findAllByIsDeletedFalse(Pageable pageable);
     Page<Hub> searchByName(String name, Pageable pageable);

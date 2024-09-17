@@ -1,4 +1,4 @@
-package com.sparta.delivery.domain.route.hub;
+package com.sparta.delivery.domain.delivery.dto.hub;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
