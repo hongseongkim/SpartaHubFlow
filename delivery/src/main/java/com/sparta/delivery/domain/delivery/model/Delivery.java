@@ -47,6 +47,12 @@ public class Delivery {
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
+    @Column(name = "latitude")
+    private Double latitude;
+
+    @Column(name = "longitude")
+    private Double longitude;
+
     @Column(name = "receiver_id")
     private Long receiverId;
 
@@ -92,10 +98,10 @@ public class Delivery {
         this.receiverSlackId = receiverSlackId;
     }
 
-    public void setRoute(DeliveryRoute route) {
+    public void updateRoute(DeliveryRoute route) {
         this.route = route;
         if (route != null && route.getDelivery() != this) {
-            route.setDelivery(this);
+            route.updateDelivery(this);
         }
     }
 
