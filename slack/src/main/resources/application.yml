@@ -1,25 +1,38 @@
+server:
+  port: 8091
 spring:
   application:
     name: slack-service  # ??? ?? ??
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hub_flow
+    username: postgres
+    password: 1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
   cloud:
     eureka:
       client:
         service-url:
           defaultZone: http://localhost:8761/eureka/  # Eureka ?? URL
-    kafka:
-      bootstrap-servers: localhost:9092
-      consumer:
-        group-id: slack-service-group
-        auto-offset-reset: earliest
-      properties:
-        key:
-          deserializer: org.apache.kafka.common.serialization.StringDeserializer
-        value:
-          deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+# application.yml
+
 
 slack:
-  token: YOUR_SLACK_BOT_TOKEN
-  channel: YOUR_SLACK_CHANNEL_ID
-server:
-  port: 8091 # ??? ??
+  token: ${SLACK_TOKEN}
 
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus # prometheus 엔드포인트 노출
+  metrics:
+    tags:
+      application: ${spring.application.name} # 애플리케이션 이름을 태그로 추가
+  endpoint:
+    prometheus:
+      enabled: true # prometheus 엔드포인트 활성화

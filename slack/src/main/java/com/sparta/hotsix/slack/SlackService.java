@@ -1,44 +1,138 @@
 package com.sparta.hotsix.slack;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Slf4j
 @Service
+@EnableScheduling
 public class SlackService {
+
+    private final SlackMessageRepository slackMessageRepository;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+    private final List<SlackMessage> delayedMessages = new ArrayList<>(); // 대기 메시지 목록
 
     @Value("${slack.token}")
     private String slackToken;
 
-    private final WebClient webClient;
-
-    public SlackService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://slack.com/api").build();
+    public SlackService(SlackMessageRepository slackMessageRepository, ObjectMapper objectMapper) {
+        this.slackMessageRepository = slackMessageRepository;
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = objectMapper;
     }
 
-    @KafkaListener(topics = "user-topic", groupId = "slack-service-group")
-    public void consume(String message, ServerWebExchange exchange) {
-        String userEmail = exchange.getRequest().getHeaders().getFirst("User-Email");
+    public void sendMessage(SlackMessageRequestDto requestDto) {
+        // 메시지를 데이터베이스에 저장
+        SlackMessage slackMessage = new SlackMessage();
+        slackMessage.setUserEmail(requestDto.getUserEmail());
+        slackMessage.setMessage(requestDto.getMessage());
+        slackMessageRepository.save(slackMessage);
 
-        if (userEmail != null) {
-            sendMessageToSlack(userEmail, message);
+        LocalTime now = LocalTime.now();
+        LocalTime startTime = LocalTime.of(6, 0);
+        LocalTime endTime = LocalTime.of(18, 0);
+
+        // 06:00 - 18:00 사이이면 즉시 메시지 전송
+        if (now.isAfter(startTime) && now.isBefore(endTime)) {
+            sendDirectMessage(requestDto);
         } else {
-            System.err.println("User-Email header is missing");
+            // 그 외 시간대에는 대기 목록에 메시지 추가
+            log.info("Adding message to delayed list to be sent at 06:00 next day.");
+            synchronized (delayedMessages) {
+                delayedMessages.add(slackMessage);
+            }
         }
     }
 
-    public void sendMessageToSlack(String userEmail, String message) {
-        String payload = String.format("{\"channel\": \"#general\", \"text\": \"Message for %s: %s\"}", userEmail, message);
+    private void sendDirectMessage(SlackMessageRequestDto requestDto) {
+        log.info("Finding Slack user ID for email: {}", requestDto.getUserEmail());
 
-        webClient.post()
-                .uri("/chat.postMessage")
-                .header("Authorization", "Bearer " + slackToken)
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(String.class)
-                .doOnError(error -> System.err.println("Error sending message to Slack: " + error.getMessage()))
-                .subscribe(response -> System.out.println("Message sent to Slack: " + response));
+        // 사용자 이메일로 Slack 사용자 ID 조회
+        String userId = findSlackUserIdByEmail(requestDto.getUserEmail());
+
+        if (userId == null) {
+            log.error("Slack user not found for email: {}", requestDto.getUserEmail());
+            return;
+        }
+
+        // Slack 사용자 ID로 메시지 전송
+        log.info("Sending Slack message to user ID {}: {}", userId, requestDto.getMessage());
+        sendSlackMessage(userId, requestDto.getMessage());
+    }
+
+    private String findSlackUserIdByEmail(String email) {
+        try {
+            String url = "https://slack.com/api/users.lookupByEmail?email=" + email;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(slackToken);
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody().contains("\"ok\":true")) {
+                JsonNode jsonNode = objectMapper.readTree(response.getBody());
+                return jsonNode.path("user").path("id").asText(null);
+            } else {
+                log.error("Failed to find Slack user by email: {}", response.getBody());
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Error while finding Slack user by email: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private void sendSlackMessage(String userId, String message) {
+        try {
+            String url = "https://slack.com/api/chat.postMessage";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(slackToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            String payload = String.format("{\"channel\":\"%s\",\"text\":\"%s\"}", userId, message);
+            HttpEntity<String> entity = new HttpEntity<>(payload, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody().contains("\"ok\":true")) {
+                log.info("Slack message sent successfully to user ID {}: {}", userId, message);
+            } else {
+                log.error("Failed to send Slack message: {}", response.getBody());
+            }
+        } catch (Exception e) {
+            log.error("Error while sending Slack message: {}", e.getMessage());
+        }
+    }
+
+    // 매일 오전 06:00에 대기 메시지 전송
+    @Scheduled(cron = "0 0 6 * * ?")
+    public void sendDelayedMessages() {
+        log.info("Sending delayed messages.");
+        synchronized (delayedMessages) {
+            for (SlackMessage slackMessage : delayedMessages) {
+                SlackMessageRequestDto requestDto = new SlackMessageRequestDto();
+                requestDto.setUserEmail(slackMessage.getUserEmail());
+                requestDto.setMessage(slackMessage.getMessage());
+                sendDirectMessage(requestDto);
+            }
+            delayedMessages.clear(); // 대기 메시지 목록 초기화
+        }
     }
 }
