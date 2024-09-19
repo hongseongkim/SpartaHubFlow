@@ -2,9 +2,12 @@ package com.sparta.hotsix.product.service;
 
 import com.sparta.hotsix.product.client.CompanyClient;
 import com.sparta.hotsix.product.client.HubClient;
+import com.sparta.hotsix.product.domain.dto.CompanyDto;
+import com.sparta.hotsix.product.domain.dto.HubDto;
 import com.sparta.hotsix.product.domain.dto.ProductDto;
 import com.sparta.hotsix.product.domain.entity.Product;
 import com.sparta.hotsix.product.repository.ProductRepository;
+import jakarta.ws.rs.ForbiddenException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -26,15 +30,30 @@ public class ProductService {
     private final CompanyClient companyClient;
 
     @Transactional
-    public ProductDto.Response createProduct(ProductDto.Create productDto) {
+    public ProductDto.Response createProduct(Long userId, String userRole, ProductDto.Create productDto) {
 
-        if (hubClient.getHubById(productDto.getHubId()) == null) {
+        HubDto.Response hubDto = hubClient.getHubById(productDto.getHubId());
+
+        if (hubDto == null) {
             throw new IllegalArgumentException("존재하지 않는 허브입니다.");
         }
 
-        if (companyClient.getCompanyById(productDto.getCompanyId()) == null) {
+        CompanyDto.Response companyDto = companyClient.getCompanyById(productDto.getCompanyId());
+
+        if (companyDto == null) {
             throw new IllegalArgumentException("존재하지 않는 업체입니다.");
         }
+
+        // 허브 관리자는 자신의 허브 상품만 생성 가능
+        if (Objects.equals(userRole, "HUB_MANAGER") && !Objects.equals(userId, hubDto.getHubManagerId())) {
+            throw new ForbiddenException("자신의 허브 상품만 생성할 수 있습니다.");
+        }
+
+        // 업체 관리자는 자신의 업체 상품만 생성 가능
+        if (Objects.equals(userRole, "COMPANY_MANAGER") && !Objects.equals(userId, companyDto.getCompanyMangerId())) {
+            throw new ForbiddenException("자신의 업체 상품만 생성할 수 있습니다.");
+        }
+
 
         return ProductDto.Response.of(productRepository.save(new Product(
                 productDto.getProductName(),
@@ -50,7 +69,7 @@ public class ProductService {
 
         Product product = productRepository.findByIdNotDeleted(productId);
 
-        if(product == null) {
+        if (product == null) {
             throw new IllegalArgumentException("존재하지 않는 상품입니다.");
         }
 
@@ -85,12 +104,34 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductDto.Response modifyProduct(UUID productId, ProductDto.Modify productDto) {
+    public ProductDto.Response modifyProduct(Long userId, String userRole, UUID productId, ProductDto.Modify productDto) {
 
         Product product = productRepository.findByIdNotDeleted(productId);
 
-        if(product == null) {
+        if (product == null) {
             throw new IllegalArgumentException("존재하지 않는 상품입니다.");
+        }
+
+        HubDto.Response hubDto = hubClient.getHubById(productDto.getHubId());
+
+        if (hubDto == null) {
+            throw new IllegalArgumentException("존재하지 않는 허브입니다.");
+        }
+
+        CompanyDto.Response companyDto = companyClient.getCompanyById(productDto.getCompanyId());
+
+        if (companyDto == null) {
+            throw new IllegalArgumentException("존재하지 않는 업체입니다.");
+        }
+
+        // 허브 관리자는 자신의 허브 상품만 수정 가능
+        if (Objects.equals(userRole, "HUB_MANAGER") && !Objects.equals(userId, hubDto.getHubManagerId())) {
+            throw new ForbiddenException("자신의 허브 상품만 수정할 수 있습니다.");
+        }
+
+        // 업체 관리자는 자신의 업체 상품만 수정 가능
+        if (Objects.equals(userRole, "COMPANY_MANAGER") && !Objects.equals(userId, companyDto.getCompanyMangerId())) {
+            throw new ForbiddenException("자신의 업체 상품만 수정할 수 있습니다.");
         }
 
         product.modify(
@@ -105,10 +146,34 @@ public class ProductService {
     }
 
     @Transactional
-    public ProductDto.DeleteResponse deleteProduct(UUID productId, ProductDto.Delete productDto) {
+    public ProductDto.DeleteResponse deleteProduct(Long userId, String userRole, UUID productId, ProductDto.Delete productDto) {
 
-        if(productRepository.findByIdNotDeleted(productId) == null){
+        Product product = productRepository.findByIdNotDeleted(productId);
+
+        if (product == null) {
             throw new IllegalArgumentException("존재하지 않는 상품입니다.");
+        }
+
+        HubDto.Response hubDto = hubClient.getHubById(product.getHubId());
+
+        if (hubDto == null) {
+            throw new IllegalArgumentException("존재하지 않는 허브입니다.");
+        }
+
+        CompanyDto.Response companyDto = companyClient.getCompanyById(product.getCompanyId());
+
+        if (companyDto == null) {
+            throw new IllegalArgumentException("존재하지 않는 업체입니다.");
+        }
+
+        // 허브 관리자는 자신의 허브 상품만 삭제 가능
+        if (Objects.equals(userRole, "HUB_MANAGER") && !Objects.equals(userId, hubDto.getHubManagerId())) {
+            throw new ForbiddenException("자신의 허브 상품만 삭제할 수 있습니다.");
+        }
+
+        // 업체 관리자는 자신의 업체 상품만 삭제 가능
+        if (Objects.equals(userRole, "COMPANY_MANAGER") && !Objects.equals(userId, companyDto.getCompanyMangerId())) {
+            throw new ForbiddenException("자신의 업체 상품만 삭제할 수 있습니다.");
         }
 
         productRepository.deleteProductById(productId, LocalDateTime.now(), productDto.getUserIdToDelete());

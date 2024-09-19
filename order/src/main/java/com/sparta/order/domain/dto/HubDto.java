@@ -1,4 +1,4 @@
-package com.sparta.hotsix.product.domain.dto;
+package com.sparta.order.domain.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

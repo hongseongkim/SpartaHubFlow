@@ -19,8 +19,11 @@ public class CompanyController {
 
     @PostMapping
     @Operation(summary = "업체 생성", description = "업체를 생성합니다.")
-    public CompanyDto.Response createCompany(@RequestBody CompanyDto.Create companyDto) {
-        return companyService.createCompany(companyDto);
+    public CompanyDto.Response createCompany(@RequestHeader("User-Id") Long userId,
+                                             @RequestHeader("User-Role") String userRole,
+                                             @RequestBody CompanyDto.Create companyDto
+    ) {
+        return companyService.createCompany(userId, userRole, companyDto);
     }
 
     @GetMapping("/{companyId}")
@@ -58,16 +61,20 @@ public class CompanyController {
 
     @PatchMapping("/companyId")
     @Operation(summary = "업체 수정", description = "업체를 수정합니다.")
-    public CompanyDto.Response modifyCompany(@PathVariable(value = "companyId") UUID companyId,
-                                             @RequestBody CompanyDto.Modify companyDto){
-        return companyService.modifyCompany(companyId, companyDto);
+    public CompanyDto.Response modifyCompany(@RequestHeader("User-Id") Long userId,
+                                             @RequestHeader("User-Role") String userRole,
+                                             @PathVariable(value = "companyId") UUID companyId,
+                                             @RequestBody CompanyDto.Modify companyDto) {
+        return companyService.modifyCompany(userId, userRole, companyId, companyDto);
     }
 
     @DeleteMapping("/companyId")
     @Operation(summary = "업체 삭제", description = "업체를 삭제합니다.")
-    public CompanyDto.DeleteResponse deleteCompany(@PathVariable(value = "companyId") UUID companyId,
-                                                   @RequestBody CompanyDto.Delete companyDto) {
-        return companyService.deleteCompany(companyId, companyDto);
+    public CompanyDto.DeleteResponse deleteCompany(@RequestHeader("User-Id") Long userId,
+                                                   @RequestHeader("User-Role") String userRole,
+                                                   @PathVariable(value = "companyId") UUID companyId
+    ) {
+        return companyService.deleteCompany(userId, userRole, companyId);
 
     }
 
