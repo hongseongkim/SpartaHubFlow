@@ -82,3 +82,13 @@ services:
         condition: service_healthy
     ports:
       - "8087:8087"
+
+  redis:
+    image: redis/redis-stack
+    container_name: redis-stack-compose
+    restart: always
+    environment:
+      REDIS_ARGS: "--requirepass 1234"
+    ports:
+      - 6379:6379
+      - 8001:8001

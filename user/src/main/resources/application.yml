@@ -15,7 +15,6 @@ spring:
     redis:
       host: redis
       port: 6379
-      username: default
       password: 1234
 
 eureka:
