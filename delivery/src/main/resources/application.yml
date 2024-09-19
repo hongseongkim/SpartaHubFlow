@@ -2,10 +2,9 @@ spring:
   application:
     name: delivery-service
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:spartahubflow}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:1234}
-    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://database:5432/spartahubflow
+    username: postgres
+    password: 1234  
   jpa:
     hibernate:
       ddl-auto: create
