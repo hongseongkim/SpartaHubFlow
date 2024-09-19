@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "product-service")
+@FeignClient(name = "delivery-service")
 public interface DeliveryClient {
     @PostMapping("api/v1/deliveries")
     void createDelivery(@RequestBody DeliveryDto.Create deliveryDto);

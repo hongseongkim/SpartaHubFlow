@@ -17,7 +17,7 @@ import java.util.Collection;
 @Tag(name = "AI", description = "AI 채팅 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/ai")
+@RequestMapping("/api/v1/products/ai")
 public class AiChatController {
 
     private final AiChatService aiChatService;
