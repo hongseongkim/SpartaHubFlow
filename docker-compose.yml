@@ -135,3 +135,14 @@ services:
     ports:
       - "6379:6379"
       - "8001:8001"
+
+  user:
+    build:
+      dockerfile: Dockerfile
+      args:
+        - FILE_DIRECTORY=./user
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8088:8088"
