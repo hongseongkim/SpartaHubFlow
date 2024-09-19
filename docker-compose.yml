@@ -39,9 +39,8 @@ services:
       database:
         condition: service_healthy
 
-    # 5번 -> 5번
     ports:
-      - "5:5"
+      - "8085:8085"
 
   order:
     environment:
@@ -54,7 +53,7 @@ services:
       database:
         condition: service_healthy
     ports:
-      - "4:4"
+      - "8084:8084"
 
   company:
     environment:
@@ -67,4 +66,4 @@ services:
       database:
         condition: service_healthy
     ports:
-      - "88:88"
+      - "8081:8081"

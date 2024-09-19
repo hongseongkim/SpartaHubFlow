@@ -18,6 +18,9 @@ import org.springframework.web.server.ServerWebExchange;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    static final String v1 = "/api/v1/";
+
+
     @Bean
     public GlobalFilter headerModifierFilter() {
         return new HeaderModifierFilter();
@@ -48,16 +51,16 @@ public class SecurityConfig {
         return authenticationWebFilter;
     }
 
-    @Bean
-    public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
-        return builder.routes()
-                .route("specific_route", r -> r
-                        .path("/api/v1/specific-endpoint/**")
-                        .filters(f -> f
-                                .addRequestHeader("X-User-Email", "extracted-email"))  // 이 부분에서 헤더 추가
-                        .uri("http://your-service-url"))
-                .build();
-    }
+//    @Bean
+//    public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+//        return builder.routes()
+//                .route("specific_route", r -> r
+//                        .path("/api/v1/specific-endpoint/**")
+//                        .filters(f -> f
+//                                .addRequestHeader("X-User-Email", "extracted-email"))  //
+//                        .uri("http://your-service-url"))
+//                .build();
+//    }
 
 
     @Bean
@@ -65,24 +68,31 @@ public class SecurityConfig {
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/v1/user/signUp").permitAll()
-                        .pathMatchers("/api/v1/user/signIn").permitAll()
+                        //user
+                        .pathMatchers(v1+"user/signUp").permitAll()
+                        .pathMatchers(v1+"user/signIn").permitAll()
                         .pathMatchers("/swagger-ui/**").permitAll()
-                        .pathMatchers("/api/v1/user/docs").permitAll()
-                        .pathMatchers(HttpMethod.GET, "/api/v1/user/admin","/api/v1/user/search").hasRole("MASTER")
-                        .pathMatchers(HttpMethod.DELETE, "/api/v1/user/admin").hasRole("MASTER")
-                        .pathMatchers("/api/v1/user/**").authenticated()
+                        .pathMatchers(v1+"user/docs").permitAll()
+                        .pathMatchers(HttpMethod.GET, v1+"user/admin").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.GET, v1+"user/search").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.DELETE, v1+"user/admin").hasRole("MASTER")
+                        .pathMatchers(v1+"user/**").authenticated()
 
-                        .pathMatchers("/api/v1/user/**").hasRole("MASTER")
+
+                        .pathMatchers(v1+"user/**").hasRole("MASTER")
 
 
                         .pathMatchers(HttpMethod.GET, "/api/v1/hubs/**").permitAll()
                         .pathMatchers("/api/v1/hubs/**").hasRole("MASTER")
 
 
-                        .pathMatchers("/api/v1/products/**").hasRole("MASTER")
-                        .pathMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                        .pathMatchers(v1+"products/**").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.GET, v1+"products/**").permitAll()
 
+                        //slack
+                        .pathMatchers(v1+"slack/**").permitAll()
+                        //metrics
+                        .pathMatchers("/metrics/**").hasIpAddress("프로메테우스 서버 IP")
 
                         .anyExchange().authenticated())
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
