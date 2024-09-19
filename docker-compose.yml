@@ -70,7 +70,7 @@ services:
 
   hub:
     environment:
-      - GOOGLE_MAPS_API_KEY=${GOOGLE_MAPS_API_KEY}
+     GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY}
     build:
       dockerfile: Dockerfile
       args:
@@ -80,7 +80,6 @@ services:
         condition: service_healthy
     ports:
       - "8083:8083"
-
 
   delivery:
     build:
