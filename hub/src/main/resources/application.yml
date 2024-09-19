@@ -1,25 +1,22 @@
 spring:
   application:
     name: hub-service
-
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:spartahubflow}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:1234}
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
 
 server:
-  port: ${SERVER_PORT:8083}
+  port: 8083
 
 eureka:
   client:
@@ -43,4 +40,4 @@ logging:
 google:
   maps:
     api:
-      key: ${YOUR_GOOGLE_MAPS_API_KEY}
+      key: ${GOOGLE_MAPS_API_KEY}
