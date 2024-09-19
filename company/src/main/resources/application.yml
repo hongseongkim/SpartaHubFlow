@@ -32,7 +32,7 @@ eureka:
 
 
 server:
-  port: 88
+  port: 8081
 
 ai:
   secret:

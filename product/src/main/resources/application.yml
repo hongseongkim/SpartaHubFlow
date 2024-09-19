@@ -32,7 +32,7 @@ eureka:
 
 
 server:
-  port: 5
+  port: 8085
 
 ai:
   secret:
