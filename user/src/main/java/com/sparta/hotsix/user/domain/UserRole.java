@@ -1,8 +1,12 @@
 package com.sparta.hotsix.user.domain;
 
+
 public enum UserRole {
-    CUSTOMER,
-    OWNER,
-    MANAGER,
-    MASTER
+    MASTER,
+    HUB_MANAGER,
+    HUB_DELIVERY_PERSON,
+    DELIVERY_PERSON,
+    COMPANY_MANAGER;
+
+
 }

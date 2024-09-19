@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: product-service
+
+  datasource:
+    url: jdbc:postgresql://database:5432/spartahubflow
+    username: postgres
+    password: 1234
+
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+        format_sql: true
+        show_sql: true
+        use_sql_comments: true
+
+eureka:
+  client:
+    service-url:
+      # url이 localhost에서 eureka로 변경됨!
+      defaultZone: http://eureka:8761/eureka/
+
+management:
+  zipkin:
+    tracing:
+      endpoint: "http://host.docker.internal:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoint:
+    prometheus:
+      enabled: true
+
+
+server:
+  port: 8085
+
+ai:
+  secret:
+    key: ${AI_SECRET_KEY}

@@ -1,47 +1,40 @@
 spring:
   application:
     name: hub-service
-
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
+    url: jdbc:postgresql://database:5432/spartahubflow
+    username: postgres
+    password: 1234 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
-
-  cache:
-    redis:
-      time-to-live: ${REDIS_TTL:600000}
-
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-
+    
 server:
-  port: ${SERVER_PORT:8083}
+  port: 8083
 
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
-    fetch-registry: true
-    register-with-eureka: true
-  instance:
-    prefer-ip-address: true
+      # url이 localhost에서 eureka로 변경됨!
+      defaultZone: http://eureka:8761/eureka/
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+  zipkin:
+    tracing:
+      endpoint: "http://host.docker.internal:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
+  endpoint:
+    prometheus:
+      enabled: true
 
 logging:
   level:
     root: INFO
-    org:
-      springframework: DEBUG
+
+google:
+  maps:
+    api:
+      key: ${GOOGLE_MAPS_API_KEY}

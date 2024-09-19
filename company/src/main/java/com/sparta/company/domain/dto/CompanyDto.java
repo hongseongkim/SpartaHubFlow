@@ -16,6 +16,7 @@ public interface CompanyDto {
         private final UUID hubId;
         private final CompanyTypeEnum companyType;
         private final String companyAddress;
+        private final Long companyMangerId;
     }
 
     @Data
@@ -25,6 +26,7 @@ public interface CompanyDto {
         private final UUID hubId;
         private final CompanyTypeEnum companyType;
         private final String companyAddress;
+        private final Long companyMangerId;
     }
 
     @Data
@@ -41,6 +43,7 @@ public interface CompanyDto {
         private final UUID hubId;
         private final CompanyTypeEnum companyType;
         private final String companyAddress;
+        private final Long companyMangerId;
 
         public static Response of(Company company) {
             return Response.builder()
@@ -49,6 +52,7 @@ public interface CompanyDto {
                     .hubId(company.getHubId())
                     .companyType(company.getCompanyType())
                     .companyAddress(company.getCompanyAddress())
+                    .companyMangerId(company.getCompanyMangerId())
                     .build();
         }
     }
@@ -61,6 +65,7 @@ public interface CompanyDto {
         private final UUID hubId;
         private final CompanyTypeEnum companyType;
         private final String companyAddress;
+        private final Long companyMangerId;
 
         public GetAllCompanysResponse(Company company) {
             this.companyId = company.getCompanyId();
@@ -68,6 +73,7 @@ public interface CompanyDto {
             this.hubId = company.getHubId();
             this.companyType = company.getCompanyType();
             this.companyAddress = company.getCompanyAddress();
+            this.companyMangerId = company.getCompanyMangerId();
         }
     }
 
