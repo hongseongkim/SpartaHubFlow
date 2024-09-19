@@ -2,9 +2,9 @@ server:
   port: 8087
 spring:
   application:
-    name: slack-service  # ??? ?? ??
+    name: slack-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/hub_flow
+    url: jdbc:postgresql://database:5432/spartahubflow
     username: postgres
     password: 1234
   jpa:
@@ -12,11 +12,10 @@ spring:
       ddl-auto: update
     show-sql: true
 
-  cloud:
-    eureka:
-      client:
-        service-url:
-          defaultZone: http://localhost:8761/eureka/  # Eureka ?? URL
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka/
 
 # application.yml
 
@@ -26,13 +25,15 @@ slack:
 
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus # prometheus 엔드포인트 노출
-  metrics:
-    tags:
-      application: ${spring.application.name} # 애플리케이션 이름을 태그로 추가
+  zipkin:
+    tracing:
+      endpoint: "http://host.docker.internal:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
   endpoint:
     prometheus:
-      enabled: true # prometheus 엔드포인트 활성화
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
