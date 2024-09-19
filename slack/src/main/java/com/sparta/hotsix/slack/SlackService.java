@@ -2,6 +2,7 @@ package com.sparta.hotsix.slack;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.slack.api.Slack;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -135,4 +136,15 @@ public class SlackService {
             delayedMessages.clear(); // 대기 메시지 목록 초기화
         }
     }
+
+    public SlackMessage getSlackMessage(Long id) {
+        return slackMessageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("이메일을 찾을 수 없습니다."));
+
+    }
+
+    public List<SlackMessage> getAllSlackMessages() {
+        
+        return slackMessageRepository.findAll();
+    }
+
 }
