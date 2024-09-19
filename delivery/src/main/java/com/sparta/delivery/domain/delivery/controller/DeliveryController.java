@@ -53,10 +53,8 @@ public class DeliveryController {
             @Parameter(description = "수정할 배송 ID", required = true) @PathVariable UUID deliveryId,
             @Valid @RequestBody DeliveryRequestDto deliveryRequestDto) {
 
-        // 마스터 또는 허브 관리자 권한 검증
-        UUID hubId = deliveryRequestDto.getOriginHubId();
-        UUID userHubId = getUserHubId();
-        authorizationService.validateManagerOrMasterRole(userRole, hubId, userHubId);
+        // 마스터 권한 검증
+        authorizationService.validateMasterRole(userRole);
 
         return ResponseEntity.ok(deliveryService.updateDelivery(deliveryId, deliveryRequestDto));
     }
@@ -91,10 +89,5 @@ public class DeliveryController {
     @GetMapping
     public ResponseEntity<List<DeliveryResponseDto>> getAllDeliveries() {
         return ResponseEntity.ok(deliveryService.getAllDeliveries());
-    }
-
-    private UUID getUserHubId() {
-        // TODO 실제 사용자 정보를 통해 허브 ID를 가져오는 로직을 구현
-        return UUID.randomUUID();
     }
 }
