@@ -8,20 +8,20 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/hub_flow
+    url: jdbc:postgresql://database:5432/hub_flow
     username: postgres
     password: 1234
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
-      username: ${redis-username}
-      password: ${redis-password}
+      username: default
+      password: 1234
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka:8761/eureka/
 
 service:
   jwt:
@@ -51,14 +51,17 @@ springdoc:
   paths-to-match:
     - /api/v1/**
 
+
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus # prometheus 엔드포인트 노출
-  metrics:
-    tags:
-      application: ${spring.application.name} # 애플리케이션 이름을 태그로 추가
+  zipkin:
+    tracing:
+      endpoint: "http://host.docker.internal:9411/api/v2/spans"
+  tracing:
+    sampling:
+      probability: 1.0
   endpoint:
     prometheus:
-      enabled: true # prometheus 엔드포인트 활성화
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}

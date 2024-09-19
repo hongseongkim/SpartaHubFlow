@@ -69,31 +69,45 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         //user
-                        .pathMatchers(v1+"user/signUp").permitAll()
-                        .pathMatchers(v1+"user/signIn").permitAll()
+                        .pathMatchers(v1 + "user/signUp").permitAll()
+                        .pathMatchers(v1 + "user/signIn").permitAll()
                         .pathMatchers("/swagger-ui/**").permitAll()
-                        .pathMatchers(v1+"user/docs").permitAll()
-                        .pathMatchers(HttpMethod.GET, v1+"user/admin").hasRole("MASTER")
-                        .pathMatchers(HttpMethod.GET, v1+"user/search").hasRole("MASTER")
-                        .pathMatchers(HttpMethod.DELETE, v1+"user/admin").hasRole("MASTER")
-                        .pathMatchers(v1+"user/**").authenticated()
+                        .pathMatchers(v1 + "user/docs").permitAll()
+                        .pathMatchers(HttpMethod.GET, v1 + "user/admin").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.GET, v1 + "user/search").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.DELETE, v1 + "user/admin").hasRole("MASTER")
 
 
-                        .pathMatchers(v1+"user/**").hasRole("MASTER")
-
-
+                        //허브
+                        .pathMatchers(HttpMethod.GET, "/api/v1/hubs/").permitAll()
                         .pathMatchers(HttpMethod.GET, "/api/v1/hubs/**").permitAll()
-                        .pathMatchers("/api/v1/hubs/**").hasRole("MASTER")
+                        .pathMatchers("/api/v1/hubs").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.POST,v1 + "hubs").hasAnyRole("MASTER", "HUB_MANAGER")
+                        .pathMatchers(HttpMethod.POST,v1 + "hubs/**").hasAnyRole("MASTER", "HUB_MANAGER")
+                        .pathMatchers(HttpMethod.PATCH,v1 + "orders/**").hasAnyRole("MASTER", "HUB_MANAGER")
+                        .pathMatchers(HttpMethod.DELETE,v1 + "orders/**").hasAnyRole("MASTER", "HUB_MANAGER")
 
 
-                        .pathMatchers(v1+"products/**").hasRole("MASTER")
-                        .pathMatchers(HttpMethod.GET, v1+"products/**").permitAll()
+                        //상품
+                        .pathMatchers(v1 + "products/**").hasRole("MASTER")
+                        .pathMatchers(HttpMethod.POST,v1 + "products").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+                        .pathMatchers(HttpMethod.PATCH,v1 + "products").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+                        .pathMatchers(HttpMethod.DELETE,v1 + "products").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
 
-                        //slack
-                        .pathMatchers(v1+"slack/**").permitAll()
-                        //metrics
-                        .pathMatchers("/metrics/**").hasIpAddress("프로메테우스 서버 IP")
+                        //업체
+                        .pathMatchers(HttpMethod.POST,v1 + "companys").hasAnyRole("MASTER", "HUB_MANAGER")
+                        .pathMatchers(v1 + "companys/**").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
 
+                        //주문
+                        .pathMatchers(HttpMethod.POST,v1 + "orders").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+                        .pathMatchers(HttpMethod.PATCH,v1 + "orders/**").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+                        .pathMatchers(HttpMethod.DELETE,v1 + "orders/**").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+
+                        //배달관련
+                        .pathMatchers(HttpMethod.POST,v1 + "deliveries").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+                        .pathMatchers(HttpMethod.POST,v1 + "deliveries/**").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+                        .pathMatchers(HttpMethod.PATCH,v1 + "deliveries/**").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
+                        .pathMatchers(HttpMethod.DELETE,v1 + "deliveries/**").hasAnyRole("MASTER", "HUB_MANAGER","COMPANY_MANAGER")
                         .anyExchange().authenticated())
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)

@@ -67,3 +67,18 @@ services:
         condition: service_healthy
     ports:
       - "8081:8081"
+
+
+  slack:
+    environment:
+      SLACK_TOKEN: ${SLACK_TOKEN}
+      AI_SECRET_KEY: ${AI_SECRET_KEY}
+    build:
+      dockerfile: Dockerfile
+      args:
+        - FILE_DIRECTORY=./slack
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "8087:8087"
