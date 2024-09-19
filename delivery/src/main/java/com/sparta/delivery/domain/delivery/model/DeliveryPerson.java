@@ -10,8 +10,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
-import java.util.UUID;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -33,8 +31,8 @@ public class DeliveryPerson {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "slack_id")
-    private String slackId;
+    @Column(name = "slack_email")
+    private String slackEmail;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
@@ -76,15 +74,19 @@ public class DeliveryPerson {
     @Column(name = "deleted_by")
     private String deletedBy;
 
-    public static DeliveryPerson create(Long userId, String slackId, DeliveryPersonType type, Delivery delivery) {
-        return new DeliveryPerson(null, userId, slackId, type, delivery);
+    public static DeliveryPerson create(Long userId, String slackEmail, DeliveryPersonType type, Delivery delivery) {
+        return new DeliveryPerson(null, userId, slackEmail, type, delivery);
     }
 
-    private DeliveryPerson(Long deliveryPersonId, Long userId, String slackId, DeliveryPersonType type, Delivery delivery) {
+    private DeliveryPerson(Long deliveryPersonId, Long userId, String slackEmail, DeliveryPersonType type, Delivery delivery) {
         this.deliveryPersonId = deliveryPersonId;
         this.userId = userId;
-        this.slackId = slackId;
+        this.slackEmail = slackEmail;
         this.type = type;
+        this.delivery = delivery;
+    }
+
+    public void updateDelivery(Delivery delivery) {
         this.delivery = delivery;
     }
 
