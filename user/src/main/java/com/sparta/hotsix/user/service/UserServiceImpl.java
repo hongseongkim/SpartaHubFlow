@@ -7,6 +7,7 @@ import com.sparta.hotsix.user.jwt.JwtUtil;
 import com.sparta.hotsix.user.domain.User;
 import com.sparta.hotsix.user.dto.SignInRequest;
 import com.sparta.hotsix.user.dto.SignUpRequest;
+import com.sparta.hotsix.user.jwt.TokenService;
 import com.sparta.hotsix.user.repository.UserQueryRepository;
 import com.sparta.hotsix.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
+    private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
     private final UserQueryRepository userQueryRepository;
 
@@ -73,7 +74,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("비밀번호가 틀립니다.");
         }
 
-        return jwtUtil.generateToken(user);
+        return tokenService.getOrGenerateToken(user);
     }
 
     @Override

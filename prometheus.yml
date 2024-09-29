@@ -1,0 +1,78 @@
+global:
+  scrape_interval: 15s # 기본 스크랩 간격
+  evaluation_interval: 15s # 규칙을 평가하는 간격
+
+scrape_configs:
+  # Prometheus 자체 모니터링
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Zipkin 서비스 모니터링
+  - job_name: 'zipkin'
+    static_configs:
+      - targets: ['zipkin:9411']
+
+  # Eureka 서비스 모니터링
+  - job_name: 'eureka'
+    static_configs:
+      - targets: ['eureka:8761']
+
+  # Gateway 서비스 모니터링
+  - job_name: 'gateway'
+    static_configs:
+      - targets: ['gateway:8080']
+
+  # Product 서비스 모니터링
+  - job_name: 'product'
+    static_configs:
+      - targets: ['product:8085']
+
+  # Order 서비스 모니터링
+  - job_name: 'order'
+    static_configs:
+      - targets: ['order:8084']
+
+  # Company 서비스 모니터링
+  - job_name: 'company'
+    static_configs:
+      - targets: ['company:8081']
+
+  # Slack 서비스 모니터링
+  - job_name: 'slack'
+    static_configs:
+      - targets: ['slack:8087']
+
+  # Hub 서비스 모니터링
+  - job_name: 'hub'
+    static_configs:
+      - targets: ['hub:8083']
+
+  # Delivery 서비스 모니터링
+  - job_name: 'delivery'
+    static_configs:
+      - targets: ['delivery:8082']
+
+  # Redis 서비스 모니터링
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  # User 서비스 모니터링
+  - job_name: 'user'
+    static_configs:
+      - targets: ['user:8088']
+
+  # Database (PostgreSQL) 모니터링 (Postgres Exporter 사용 시)
+  # PostgreSQL은 직접 Prometheus 메트릭을 제공하지 않으므로, Postgres Exporter와 같은 도구가 필요합니다.
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['database:9187']  # Postgres Exporter를 통해 9187 포트에서 메트릭을 수집한다고 가정합니다.
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+rule_files:
+# '- "alert_rules.yml"' # 경고 규칙을 정의할 파일이 있으면 여기에 추가

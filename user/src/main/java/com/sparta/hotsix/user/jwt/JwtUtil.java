@@ -1,6 +1,9 @@
 package com.sparta.hotsix.user.jwt;
 
 import com.sparta.hotsix.user.domain.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -18,6 +21,11 @@ public class JwtUtil {
 
     @Value("${service.jwt.access-expiration}")
     private long expirationMs;
+
+    public long getExpirationMs() {
+        return expirationMs;
+    }
+
 
     public JwtUtil(@Value("${service.jwt.secret-key}") String secretKey) {
         this.secretKey = secretKey;
@@ -38,4 +46,17 @@ public class JwtUtil {
                 .signWith(getSigningKey())
                 .compact();
     }
+
+    public boolean validateToken(String token) {
+        try {
+            Jws<Claims> claims =             Jwts.parser()
+                    .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64URL.decode(secretKey)))
+                    .build()
+                    . parseSignedClaims(token);
+            return !claims.getPayload().getExpiration().before(new Date());
+        } catch (ExpiredJwtException e) {
+            return false;
+        }
+    }
+
 }

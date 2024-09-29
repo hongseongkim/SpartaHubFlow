@@ -6,11 +6,13 @@ services:
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: spartahubflow
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d user"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d spartahubflow"]
       interval: 10s
       retries: 5
       start_period: 30s
       timeout: 10s
+    ports:
+      - "5432:5432"
 
   zipkin:
     image: openzipkin/zipkin
@@ -128,7 +130,7 @@ services:
 
   redis:
     image: redis/redis-stack
-    container_name: redis-stack-compose
+    container_name: redis
     restart: always
     environment:
       REDIS_ARGS: "--requirepass 1234"
@@ -141,8 +143,5 @@ services:
       dockerfile: Dockerfile
       args:
         - FILE_DIRECTORY=./user
-    depends_on:
-      database:
-        condition: service_healthy
     ports:
       - "8088:8088"
